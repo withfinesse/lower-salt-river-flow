@@ -29,7 +29,7 @@
             margin-bottom: 20px;
         }
 
-        #flow-data, #gage-height, #precipitation {
+        .data {
             font-size: 1.5em;
             color: #333;
             margin-top: 10px;
@@ -41,21 +41,65 @@
             right: 10px;
             color: lightgray;
         }
+
+        .gauge {
+            width: 100%;
+            height: 20px;
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .gauge div {
+            flex: 1;
+        }
+
+        .poor {
+            background-color: red;
+        }
+
+        .acceptable {
+            background-color: yellow;
+        }
+
+        .good {
+            background-color: green;
+        }
+
+        .vessel-select {
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Lower Salt River Water Flow</h1>
-        <div id="flow-data">Loading...</div>
-        <div id="gage-height">Loading...</div>
-        <div id="precipitation">Loading...</div>
-        <div class="version">v1.1.0</div>
+        <div id="flow-data" class="data">Loading...</div>
+        <div id="gage-height" class="data">Loading...</div>
+        <div id="precipitation" class="data">Loading...</div>
+        <div class="vessel-select">
+            <label for="vessel">Select your vessel:</label>
+            <select id="vessel">
+                <option value="tube">Tube</option>
+                <option value="paddleboard-shallow">Paddle board (no fin(s)/shallow fin(s))</option>
+                <option value="paddleboard-river">Paddle board with river fin(s)</option>
+                <option value="kayak">Kayak</option>
+            </select>
+        </div>
+        <div class="gauge">
+            <div class="poor"></div>
+            <div class="acceptable"></div>
+            <div class="good"></div>
+        </div>
+        <div id="gauge-status" class="data"></div>
+        <div class="version">v1.2.0</div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const flowDataElement = document.getElementById('flow-data');
             const gageHeightElement = document.getElementById('gage-height');
             const precipitationElement = document.getElementById('precipitation');
+            const vesselSelect = document.getElementById('vessel');
+            const gaugeStatus = document.getElementById('gauge-status');
 
             async function fetchWaterData() {
                 try {
@@ -69,12 +113,49 @@
                     flowDataElement.textContent = `Current Flow Rate: ${discharge} cubic feet per second`;
                     gageHeightElement.textContent = `Current Gage Height: ${gageHeight} feet`;
                     precipitationElement.textContent = `Precipitation: ${precipitation} inches`;
+
+                    updateGauge(discharge, vesselSelect.value);
                 } catch (error) {
                     flowDataElement.textContent = 'Error fetching data';
                     gageHeightElement.textContent = 'Error fetching data';
                     precipitationElement.textContent = 'Error fetching data';
                 }
             }
+
+            function updateGauge(flowRate, vessel) {
+                let status = 'Poor';
+                let color = 'red';
+
+                if (vessel === 'tube' && flowRate >= 300 && flowRate <= 500) {
+                    status = 'Acceptable';
+                    color = 'yellow';
+                } else if (vessel === 'paddleboard-shallow' && flowRate >= 300 && flowRate <= 700) {
+                    status = 'Acceptable';
+                    color = 'yellow';
+                } else if (vessel === 'paddleboard-river' && flowRate >= 500 && flowRate <= 800) {
+                    status = 'Acceptable';
+                    color = 'yellow';
+                } else if (vessel === 'kayak' && flowRate >= 500 && flowRate <= 1500) {
+                    status = 'Good';
+                    color = 'green';
+                }
+
+                if ((vessel === 'tube' && flowRate > 500) ||
+                    (vessel === 'paddleboard-shallow' && flowRate > 700) ||
+                    (vessel === 'paddleboard-river' && flowRate > 800) ||
+                    (vessel === 'kayak' && flowRate > 1500)) {
+                    status = 'Good';
+                    color = 'green';
+                }
+
+                gaugeStatus.textContent = `Conditions: ${status}`;
+                gaugeStatus.style.color = color;
+            }
+
+            vesselSelect.addEventListener('change', function() {
+                const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
+                updateGauge(flowRate, vesselSelect.value);
+            });
 
             fetchWaterData();
         });
