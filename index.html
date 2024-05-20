@@ -128,7 +128,7 @@
             <div class="pointer" id="pointer"></div>
         </div>
         <div id="gauge-status" class="data"></div>
-        <div class="version">v1.4.0</div>
+        <div class="version">v1.4.1</div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -223,12 +223,3 @@
                         status = 'Good';
                         color = 'green';
                         pointerPosition = 100;
-                    }
-                }
-
-                gaugeStatus.textContent = `Conditions: ${status}`;
-                gaugeStatus.style.color = color;
-                pointer.style.left = `${pointerPosition}%`;
-            }
-
-            vesselSelect.add
