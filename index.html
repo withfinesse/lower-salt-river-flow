@@ -128,7 +128,7 @@
             <div class="pointer" id="pointer"></div>
         </div>
         <div id="gauge-status" class="data"></div>
-        <div class="version">v1.4.1</div>
+        <div class="version">v1.4.2</div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -147,7 +147,7 @@
                     const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000&parameterCd=00060,00065,00045&period=P1D');
                     const data = await response.json();
 
-                    const discharge = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060').values[0].value[0].value;
+                    const discharge = parseFloat(data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060').values[0].value[0].value);
                     const gageHeight = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065').values[0].value[0].value;
                     const precipitation = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045').values[0].value[0].value;
 
@@ -180,46 +180,4 @@
                     } else if (flowRate > 500) {
                         status = 'Good';
                         color = 'green';
-                        pointerPosition = 33 + (flowRate - 500) / 1000 * 67; // 33% to 100%
-                    }
-                } else if (vessel === 'paddleboard-shallow') {
-                    labelPoor.textContent = '0-299 cfs';
-                    labelAcceptable.textContent = '300-700 cfs';
-                    labelGood.textContent = '700+ cfs';
-
-                    if (flowRate >= 300 && flowRate <= 700) {
-                        status = 'Acceptable';
-                        color = 'yellow';
-                        pointerPosition = (flowRate - 300) / 400 * 33; // 0 to 33%
-                    } else if (flowRate > 700) {
-                        status = 'Good';
-                        color = 'green';
-                        pointerPosition = 33 + (flowRate - 700) / 800 * 67; // 33% to 100%
-                    }
-                } else if (vessel === 'paddleboard-river') {
-                    labelPoor.textContent = '0-499 cfs';
-                    labelAcceptable.textContent = '500-800 cfs';
-                    labelGood.textContent = '800+ cfs';
-
-                    if (flowRate >= 500 && flowRate <= 800) {
-                        status = 'Acceptable';
-                        color = 'yellow';
-                        pointerPosition = (flowRate - 500) / 300 * 33; // 0 to 33%
-                    } else if (flowRate > 800) {
-                        status = 'Good';
-                        color = 'green';
-                        pointerPosition = 33 + (flowRate - 800) / 700 * 67; // 33% to 100%
-                    }
-                } else if (vessel === 'kayak') {
-                    labelPoor.textContent = '0-499 cfs';
-                    labelAcceptable.textContent = '500-1500 cfs';
-                    labelGood.textContent = '1500+ cfs';
-
-                    if (flowRate >= 500 && flowRate <= 1500) {
-                        status = 'Good';
-                        color = 'green';
-                        pointerPosition = (flowRate - 500) / 1000 * 100; // 0 to 100%
-                    } else if (flowRate > 1500) {
-                        status = 'Good';
-                        color = 'green';
-                        pointerPosition = 100;
+                        pointerPosition
