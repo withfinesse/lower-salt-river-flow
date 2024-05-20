@@ -232,3 +232,54 @@
                         status = 'Acceptable';
                         color = 'yellow';
                         pointerPosition = (flowRate - 300) / 400 * 33; // 0 to 33%
+                    } else if (flowRate > 700) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = 33 + (flowRate - 700) / 800 * 67; // 33% to 100%
+                    }
+                } else if (vessel === 'paddleboard-river') {
+                    labelPoor.textContent = '0-499 cfs';
+                    labelAcceptable.textContent = '500-800 cfs';
+                    labelGood.textContent = '800+ cfs';
+
+                    if (flowRate >= 500 && flowRate <= 800) {
+                        status = 'Acceptable';
+                        color = 'yellow';
+                        pointerPosition = (flowRate - 500) / 300 * 33; // 0 to 33%
+                    } else if (flowRate > 800) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = 33 + (flowRate - 800) / 700 * 67; // 33% to 100%
+                    }
+                } else if (vessel === 'kayak') {
+                    labelPoor.textContent = '0-499 cfs';
+                    labelAcceptable.textContent = '500-1500 cfs';
+                    labelGood textContent = '1500+ cfs';
+
+                    if (flowRate >= 500 && flowRate <= 1500) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = (flowRate - 500) / 1000 * 100; // 0 to 100%
+                    } else if (flowRate > 1500) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = 100;
+                    }
+                }
+
+                gaugeStatus.textContent = `Conditions: ${status}`;
+                gaugeStatus.style.color = color;
+                pointer.style.left = `${pointerPosition}%`;
+            }
+
+            vesselSelect.addEventListener('change', function() {
+                logDebugMessage("Vessel selected: " + vesselSelect.value);
+                const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
+                updateGauge(flowRate, vesselSelect.value);
+            });
+
+            fetchWaterData();
+        });
+    </script>
+</body>
+</html>
