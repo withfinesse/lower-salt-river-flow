@@ -142,7 +142,7 @@
             <div class="pointer" id="pointer"></div>
         </div>
         <div id="gauge-status" class="data"></div>
-        <div class="version">v1.4.5</div>
+        <div class="version">v1.4.6</div>
     </div>
     <div class="debug" id="debug-log"></div>
     <script>
@@ -183,8 +183,8 @@
                     }
 
                     const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
-                    const gageHeight = gageHeightTimeSeries.values[0].value[0].value;
-                    const precipitation = precipitationTimeSeries.values[0].value[0].value;
+                    const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
+                    const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
 
                     logDebugMessage("Discharge: " + discharge);
                     logDebugMessage("Gage Height: " + gageHeight);
@@ -254,7 +254,7 @@
                 } else if (vessel === 'kayak') {
                     labelPoor.textContent = '0-499 cfs';
                     labelAcceptable.textContent = '500-1500 cfs';
-                    labelGood textContent = '1500+ cfs';
+                    labelGood.textContent = '1500+ cfs';
 
                     if (flowRate >= 500 && flowRate <= 1500) {
                         status = 'Good';
