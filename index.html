@@ -54,6 +54,7 @@
             display: flex;
             width: 100%;
             height: 100%;
+            position: relative;
         }
 
         .gauge div {
@@ -74,13 +75,13 @@
 
         .pointer {
             position: absolute;
-            top: -10px;
+            top: -20px; /* Larger pointer */
             width: 0;
             height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid black;
-            left: 50%; /* Default position at center */
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid black; /* Changed direction to point downwards */
+            left: 50%;
             transform: translateX(-50%);
         }
 
@@ -129,20 +130,19 @@
             </select>
         </div>
         <div class="condition-labels">
-            <div class="condition-label" id="label-poor">Poor</div>
-            <div class="condition-label" id="label-acceptable">Acceptable</div>
-            <div class="condition-label" id="label-good">Good</div>
+            <div class="condition-label">Poor</div>
+            <div class="condition-label">Acceptable</div>
+            <div class="condition-label">Good</div>
         </div>
         <div class="gauge-container">
             <div class="gauge">
                 <div class="poor"></div>
                 <div class="acceptable"></div>
                 <div class="good"></div>
+                <div class="pointer" id="pointer"></div>
             </div>
-            <div class="pointer" id="pointer"></div>
         </div>
-        <div id="gauge-status" class="data"></div>
-        <div class="version">v1.4.6</div>
+        <div class="version">v1.5.0</div>
     </div>
     <div class="debug" id="debug-log"></div>
     <script>
@@ -151,11 +151,7 @@
             const gageHeightElement = document.getElementById('gage-height');
             const precipitationElement = document.getElementById('precipitation');
             const vesselSelect = document.getElementById('vessel');
-            const gaugeStatus = document.getElementById('gauge-status');
             const pointer = document.getElementById('pointer');
-            const labelPoor = document.getElementById('label-poor');
-            const labelAcceptable = document.getElementById('label-acceptable');
-            const labelGood = document.getElementById('label-good');
             const debugLog = document.getElementById('debug-log');
 
             function logDebugMessage(message) {
@@ -205,70 +201,34 @@
 
             function updateGauge(flowRate, vessel) {
                 logDebugMessage("Updating gauge with flowRate: " + flowRate + " and vessel: " + vessel);
-                let status = 'Poor';
-                let color = 'red';
                 let pointerPosition = 0;
 
                 if (vessel === 'tube') {
-                    labelPoor.textContent = '0-299 cfs';
-                    labelAcceptable.textContent = '300-500 cfs';
-                    labelGood.textContent = '500+ cfs';
-
                     if (flowRate >= 300 && flowRate <= 500) {
-                        status = 'Acceptable';
-                        color = 'yellow';
                         pointerPosition = (flowRate - 300) / 200 * 33; // 0 to 33%
                     } else if (flowRate > 500) {
-                        status = 'Good';
-                        color = 'green';
                         pointerPosition = 33 + (flowRate - 500) / 1000 * 67; // 33% to 100%
                     }
                 } else if (vessel === 'paddleboard-shallow') {
-                    labelPoor.textContent = '0-299 cfs';
-                    labelAcceptable.textContent = '300-700 cfs';
-                    labelGood.textContent = '700+ cfs';
-
                     if (flowRate >= 300 && flowRate <= 700) {
-                        status = 'Acceptable';
-                        color = 'yellow';
                         pointerPosition = (flowRate - 300) / 400 * 33; // 0 to 33%
                     } else if (flowRate > 700) {
-                        status = 'Good';
-                        color = 'green';
                         pointerPosition = 33 + (flowRate - 700) / 800 * 67; // 33% to 100%
                     }
                 } else if (vessel === 'paddleboard-river') {
-                    labelPoor.textContent = '0-499 cfs';
-                    labelAcceptable.textContent = '500-800 cfs';
-                    labelGood.textContent = '800+ cfs';
-
                     if (flowRate >= 500 && flowRate <= 800) {
-                        status = 'Acceptable';
-                        color = 'yellow';
                         pointerPosition = (flowRate - 500) / 300 * 33; // 0 to 33%
                     } else if (flowRate > 800) {
-                        status = 'Good';
-                        color = 'green';
                         pointerPosition = 33 + (flowRate - 800) / 700 * 67; // 33% to 100%
                     }
                 } else if (vessel === 'kayak') {
-                    labelPoor.textContent = '0-499 cfs';
-                    labelAcceptable.textContent = '500-1500 cfs';
-                    labelGood.textContent = '1500+ cfs';
-
                     if (flowRate >= 500 && flowRate <= 1500) {
-                        status = 'Good';
-                        color = 'green';
                         pointerPosition = (flowRate - 500) / 1000 * 100; // 0 to 100%
                     } else if (flowRate > 1500) {
-                        status = 'Good';
-                        color = 'green';
                         pointerPosition = 100;
                     }
                 }
 
-                gaugeStatus.textContent = `Conditions: ${status}`;
-                gaugeStatus.style.color = color;
                 pointer.style.left = `${pointerPosition}%`;
             }
 
