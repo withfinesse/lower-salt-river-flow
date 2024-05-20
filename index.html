@@ -42,11 +42,17 @@
             color: lightgray;
         }
 
-        .gauge {
+        .gauge-container {
+            position: relative;
             width: 100%;
-            height: 20px;
-            display: flex;
+            height: 40px;
             margin-top: 20px;
+        }
+
+        .gauge {
+            display: flex;
+            width: 100%;
+            height: 100%;
         }
 
         .gauge div {
@@ -63,6 +69,18 @@
 
         .good {
             background-color: green;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -10px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid black;
+            left: 50%; /* Default position at center */
+            transform: translateX(-50%);
         }
 
         .vessel-select {
@@ -85,13 +103,16 @@
                 <option value="kayak">Kayak</option>
             </select>
         </div>
-        <div class="gauge">
-            <div class="poor"></div>
-            <div class="acceptable"></div>
-            <div class="good"></div>
+        <div class="gauge-container">
+            <div class="gauge">
+                <div class="poor"></div>
+                <div class="acceptable"></div>
+                <div class="good"></div>
+            </div>
+            <div class="pointer" id="pointer"></div>
         </div>
         <div id="gauge-status" class="data"></div>
-        <div class="version">v1.2.0</div>
+        <div class="version">v1.3.0</div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -100,6 +121,7 @@
             const precipitationElement = document.getElementById('precipitation');
             const vesselSelect = document.getElementById('vessel');
             const gaugeStatus = document.getElementById('gauge-status');
+            const pointer = document.getElementById('pointer');
 
             async function fetchWaterData() {
                 try {
@@ -125,31 +147,53 @@
             function updateGauge(flowRate, vessel) {
                 let status = 'Poor';
                 let color = 'red';
+                let pointerPosition = 0;
 
-                if (vessel === 'tube' && flowRate >= 300 && flowRate <= 500) {
-                    status = 'Acceptable';
-                    color = 'yellow';
-                } else if (vessel === 'paddleboard-shallow' && flowRate >= 300 && flowRate <= 700) {
-                    status = 'Acceptable';
-                    color = 'yellow';
-                } else if (vessel === 'paddleboard-river' && flowRate >= 500 && flowRate <= 800) {
-                    status = 'Acceptable';
-                    color = 'yellow';
-                } else if (vessel === 'kayak' && flowRate >= 500 && flowRate <= 1500) {
-                    status = 'Good';
-                    color = 'green';
-                }
-
-                if ((vessel === 'tube' && flowRate > 500) ||
-                    (vessel === 'paddleboard-shallow' && flowRate > 700) ||
-                    (vessel === 'paddleboard-river' && flowRate > 800) ||
-                    (vessel === 'kayak' && flowRate > 1500)) {
-                    status = 'Good';
-                    color = 'green';
+                if (vessel === 'tube') {
+                    if (flowRate >= 300 && flowRate <= 500) {
+                        status = 'Acceptable';
+                        color = 'yellow';
+                        pointerPosition = (flowRate - 300) / 200 * 33; // 0 to 33%
+                    } else if (flowRate > 500) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = 33 + (flowRate - 500) / 1000 * 67; // 33% to 100%
+                    }
+                } else if (vessel === 'paddleboard-shallow') {
+                    if (flowRate >= 300 && flowRate <= 700) {
+                        status = 'Acceptable';
+                        color = 'yellow';
+                        pointerPosition = (flowRate - 300) / 400 * 33; // 0 to 33%
+                    } else if (flowRate > 700) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = 33 + (flowRate - 700) / 800 * 67; // 33% to 100%
+                    }
+                } else if (vessel === 'paddleboard-river') {
+                    if (flowRate >= 500 && flowRate <= 800) {
+                        status = 'Acceptable';
+                        color = 'yellow';
+                        pointerPosition = (flowRate - 500) / 300 * 33; // 0 to 33%
+                    } else if (flowRate > 800) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = 33 + (flowRate - 800) / 700 * 67; // 33% to 100%
+                    }
+                } else if (vessel === 'kayak') {
+                    if (flowRate >= 500 && flowRate <= 1500) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = (flowRate - 500) / 1000 * 100; // 0 to 100%
+                    } else if (flowRate > 1500) {
+                        status = 'Good';
+                        color = 'green';
+                        pointerPosition = 100;
+                    }
                 }
 
                 gaugeStatus.textContent = `Conditions: ${status}`;
                 gaugeStatus.style.color = color;
+                pointer.style.left = `${pointerPosition}%`;
             }
 
             vesselSelect.addEventListener('change', function() {
