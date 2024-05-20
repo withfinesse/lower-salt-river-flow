@@ -214,7 +214,7 @@
             async function fetchWaterData() {
                 logDebugMessage("Fetching water data...");
                 try {
-                    const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000&parameterCd=00060,00065,00045&period=P1D');
+                    const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000&parameterCd=00060,00065,00045');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
