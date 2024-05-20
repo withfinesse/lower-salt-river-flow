@@ -101,6 +101,7 @@
         }
 
         .debug {
+            display: none;
             margin-top: 20px;
             width: 90%;
             max-width: 600px;
@@ -112,6 +113,13 @@
             font-size: 0.9em;
             color: #333;
         }
+
+        .console-toggle {
+            margin-top: 10px;
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -120,6 +128,7 @@
         <div id="flow-data" class="data">Loading...</div>
         <div id="gage-height" class="data">Loading...</div>
         <div id="precipitation" class="data">Loading...</div>
+        <div id="last-update" class="data">Loading...</div>
         <div class="vessel-select">
             <label for="vessel">Select your vessel:</label>
             <select id="vessel">
@@ -142,7 +151,8 @@
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v1.5.0</div>
+        <div class="version">v1.6.0</div>
+        <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
     <script>
@@ -150,15 +160,27 @@
             const flowDataElement = document.getElementById('flow-data');
             const gageHeightElement = document.getElementById('gage-height');
             const precipitationElement = document.getElementById('precipitation');
+            const lastUpdateElement = document.getElementById('last-update');
             const vesselSelect = document.getElementById('vessel');
             const pointer = document.getElementById('pointer');
             const debugLog = document.getElementById('debug-log');
+            const toggleConsole = document.getElementById('toggle-console');
 
             function logDebugMessage(message) {
                 const logEntry = document.createElement('div');
                 logEntry.textContent = message;
                 debugLog.appendChild(logEntry);
             }
+
+            toggleConsole.addEventListener('click', function() {
+                if (debugLog.style.display === 'none') {
+                    debugLog.style.display = 'block';
+                    toggleConsole.textContent = 'Hide Console';
+                } else {
+                    debugLog.style.display = 'none';
+                    toggleConsole.textContent = 'View Console';
+                }
+            });
 
             async function fetchWaterData() {
                 logDebugMessage("Fetching water data...");
@@ -181,14 +203,17 @@
                     const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
                     const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
                     const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
+                    const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
 
                     logDebugMessage("Discharge: " + discharge);
                     logDebugMessage("Gage Height: " + gageHeight);
                     logDebugMessage("Precipitation: " + precipitation);
+                    logDebugMessage("Last Update Time: " + lastUpdateTime);
 
                     flowDataElement.textContent = `Current Flow Rate: ${discharge} cubic feet per second`;
                     gageHeightElement.textContent = `Current Gage Height: ${gageHeight} feet`;
                     precipitationElement.textContent = `Precipitation: ${precipitation} inches`;
+                    lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
 
                     updateGauge(discharge, vesselSelect.value);
                 } catch (error) {
@@ -196,6 +221,7 @@
                     flowDataElement.textContent = 'Error fetching data';
                     gageHeightElement.textContent = 'Error fetching data';
                     precipitationElement.textContent = 'Error fetching data';
+                    lastUpdateElement.textContent = 'Error fetching data';
                 }
             }
 
