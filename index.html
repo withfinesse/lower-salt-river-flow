@@ -22,15 +22,24 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         h1 {
             margin-bottom: 20px;
         }
 
-        #flow-data {
+        #flow-data, #gage-height, #precipitation {
             font-size: 1.5em;
             color: #333;
+            margin-top: 10px;
+        }
+
+        .version {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: lightgray;
         }
     </style>
 </head>
@@ -38,23 +47,36 @@
     <div class="container">
         <h1>Lower Salt River Water Flow</h1>
         <div id="flow-data">Loading...</div>
+        <div id="gage-height">Loading...</div>
+        <div id="precipitation">Loading...</div>
+        <div class="version">v1.1.0</div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const flowDataElement = document.getElementById('flow-data');
+            const gageHeightElement = document.getElementById('gage-height');
+            const precipitationElement = document.getElementById('precipitation');
 
-            async function fetchWaterFlow() {
+            async function fetchWaterData() {
                 try {
-                    const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000&parameterCd=00060&period=P1D');
+                    const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000&parameterCd=00060,00065,00045&period=P1D');
                     const data = await response.json();
-                    const flowRate = data.value.timeSeries[0].values[0].value[0].value;
-                    flowDataElement.textContent = `Current Flow Rate: ${flowRate} cubic feet per second`;
+
+                    const discharge = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060').values[0].value[0].value;
+                    const gageHeight = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065').values[0].value[0].value;
+                    const precipitation = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045').values[0].value[0].value;
+
+                    flowDataElement.textContent = `Current Flow Rate: ${discharge} cubic feet per second`;
+                    gageHeightElement.textContent = `Current Gage Height: ${gageHeight} feet`;
+                    precipitationElement.textContent = `Precipitation: ${precipitation} inches`;
                 } catch (error) {
                     flowDataElement.textContent = 'Error fetching data';
+                    gageHeightElement.textContent = 'Error fetching data';
+                    precipitationElement.textContent = 'Error fetching data';
                 }
             }
 
-            fetchWaterFlow();
+            fetchWaterData();
         });
     </script>
 </body>
