@@ -69,20 +69,23 @@
         }
 
         .gauge div {
-            flex: 1;
             height: 100%;
         }
 
-        .poor {
-            background: linear-gradient(90deg, #ff4d4d, #ff6666);
+        .very-slow {
+            background: gray;
         }
 
-        .acceptable {
-            background: linear-gradient(90deg, #ffcc00, #ffdd33);
+        .slow {
+            background: yellow;
         }
 
-        .good {
-            background: linear-gradient(90deg, #66cc66, #99ff99);
+        .optimal {
+            background: green;
+        }
+
+        .fast-unsafe {
+            background: red;
         }
 
         .pointer {
@@ -166,19 +169,21 @@
             <div class="segment" id="vessel-kayak" data-vessel="kayak">Kayak</div>
         </div>
         <div class="condition-labels">
-            <div>Poor</div>
-            <div>Acceptable</div>
-            <div>Good</div>
+            <div>Very Slow</div>
+            <div>Slow</div>
+            <div>Optimal</div>
+            <div>Fast/Unsafe</div>
         </div>
         <div class="gauge-container">
-            <div class="gauge">
-                <div class="poor"></div>
-                <div class="acceptable"></div>
-                <div class="good"></div>
+            <div class="gauge" id="gauge">
+                <div class="very-slow" id="very-slow"></div>
+                <div class="slow" id="slow"></div>
+                <div class="optimal" id="optimal"></div>
+                <div class="fast-unsafe" id="fast-unsafe"></div>
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v2.3.0</div>
+        <div class="version">v2.4.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -193,6 +198,11 @@
             const lastUpdateElement = document.getElementById('last-update');
             const vesselSegments = document.querySelectorAll('.segment');
             const pointer = document.getElementById('pointer');
+            const gauge = document.getElementById('gauge');
+            const verySlowSection = document.getElementById('very-slow');
+            const slowSection = document.getElementById('slow');
+            const optimalSection = document.getElementById('optimal');
+            const fastUnsafeSection = document.getElementById('fast-unsafe');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
 
@@ -245,7 +255,7 @@
                     precipitationElement.textContent = `Precipitation: ${precipitation} in`;
                     lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
 
-                    updateGauge(discharge, gageHeight, document.querySelector('.segment.selected').getAttribute('data-vessel'));
+                    updateGauge(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
                     flowDataElement.textContent = 'Error fetching data';
@@ -255,49 +265,46 @@
                 }
             }
 
-            function updateGauge(flowRate, gageHeight, vessel) {
-                logDebugMessage(`Updating gauge with flowRate: ${flowRate}, gageHeight: ${gageHeight}, and vessel: ${vessel}`);
-                let pointerPosition = 0;
+            function updateGauge(flowRate, vessel) {
+                logDebugMessage(`Updating gauge with flowRate: ${flowRate} and vessel: ${vessel}`);
+                let minCFS, optCFSMin, optCFSMax, verySlowWidth, slowWidth, optimalWidth, fastUnsafeWidth;
+                let showSlow = true;
 
                 switch (vessel) {
                     case 'tube':
-                        if (flowRate >= 800 && flowRate <= 2000) {
-                            pointerPosition = (flowRate - 800) / 1200 * 100; // Scale from 0 to 100%
-                        } else if (flowRate < 800) {
-                            pointerPosition = 0; // Poor
-                        } else {
-                            pointerPosition = 100; // Good
-                        }
+                        minCFS = 800;
+                        optCFSMin = 800;
+                        optCFSMax = 2000;
+                        showSlow = false;
                         break;
                     case 'paddleboard-shallow':
-                        if (flowRate >= 600 && flowRate <= 1200) {
-                            pointerPosition = (flowRate - 600) / 600 * 100; // Scale from 0 to 100%
-                        } else if (flowRate < 600) {
-                            pointerPosition = 0; // Poor
-                        } else {
-                            pointerPosition = 100; // Good
-                        }
+                        minCFS = 400;
+                        optCFSMin = 600;
+                        optCFSMax = 1200;
                         break;
                     case 'paddleboard-river':
-                        if (flowRate >= 700 && flowRate <= 1200) {
-                            pointerPosition = (flowRate - 700) / 500 * 100; // Scale from 0 to 100%
-                        } else if (flowRate < 700) {
-                            pointerPosition = 0; // Poor
-                        } else {
-                            pointerPosition = 100; // Good
-                        }
+                        minCFS = 500;
+                        optCFSMin = 700;
+                        optCFSMax = 1200;
                         break;
                     case 'kayak':
-                        if (flowRate >= 800 && flowRate <= 1500) {
-                            pointerPosition = (flowRate - 800) / 700 * 100; // Scale from 0 to 100%
-                        } else if (flowRate < 800) {
-                            pointerPosition = 0; // Poor
-                        } else {
-                            pointerPosition = 100; // Good
-                        }
+                        minCFS = 500;
+                        optCFSMin = 800;
+                        optCFSMax = 1500;
                         break;
                 }
 
+                verySlowWidth = (minCFS / 3000) * 100;
+                slowWidth = showSlow ? ((optCFSMin - minCFS) / 3000) * 100 : 0;
+                optimalWidth = ((optCFSMax - optCFSMin) / 3000) * 100;
+                fastUnsafeWidth = ((3000 - optCFSMax) / 3000) * 100;
+
+                verySlowSection.style.width = `${verySlowWidth}%`;
+                slowSection.style.width = `${slowWidth}%`;
+                optimalSection.style.width = `${optimalWidth}%`;
+                fastUnsafeSection.style.width = `${fastUnsafeWidth}%`;
+
+                const pointerPosition = (flowRate / 3000) * 100;
                 pointer.style.left = `${pointerPosition}%`;
             }
 
@@ -307,8 +314,7 @@
                     segment.classList.add('selected');
                     logDebugMessage("Vessel selected: " + segment.getAttribute('data-vessel'));
                     const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
-                    const gageHeight = parseFloat(gageHeightElement.textContent.split(': ')[1]);
-                    updateGauge(flowRate, gageHeight, segment.getAttribute('data-vessel'));
+                    updateGauge(flowRate, segment.getAttribute('data-vessel'));
                 });
             });
 
