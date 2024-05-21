@@ -198,9 +198,9 @@
             <div class="key-item"><div class="key-color" style="background: gray;"></div><span id="key-very-slow-text">Very Slow (0 CFS to 800 CFS)</span></div>
             <div class="key-item"><div class="key-color" style="background: yellow;"></div><span id="key-slow-text">Slow (800 CFS to 800 CFS)</span></div>
             <div class="key-item"><div class="key-color" style="background: green;"></div><span id="key-optimal-text">Optimal (800 CFS to 2000 CFS)</span></div>
-            <div class="key-item"><div class="key-color" style="background: red;"></div><span id="key-fast-unsafe-text">Fast/Unsafe (2000 CFS to 3000 CFS)</span></div>
+            <div class="key-item"><div class="key-color" style="background: red;"></div><span id="key-fast-unsafe-text">Fast/Unsafe (2000 CFS to 2500 CFS)</span></div>
         </div>
-        <div class="version">v2.6.0</div>
+        <div class="version">v2.7.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -238,7 +238,7 @@
                     debugLog.style.display = 'block';
                     toggleConsole.textContent = 'Hide Console';
                 } else {
-                    debugLog.style.display = 'none';
+                    debugLog.style.display === 'none';
                     toggleConsole.textContent = 'View Console';
                 }
             });
@@ -291,6 +291,8 @@
                 let minCFS, optCFSMin, optCFSMax, verySlowWidth, slowWidth, optimalWidth, fastUnsafeWidth;
                 let showSlow = true;
 
+                const maxCFS = flowRate > 2500 ? flowRate : 2500;
+
                 switch (vessel) {
                     case 'tube':
                         minCFS = 800;
@@ -315,10 +317,10 @@
                         break;
                 }
 
-                verySlowWidth = (minCFS / 3000) * 100;
-                slowWidth = showSlow ? ((optCFSMin - minCFS) / 3000) * 100 : 0;
-                optimalWidth = ((optCFSMax - optCFSMin) / 3000) * 100;
-                fastUnsafeWidth = ((3000 - optCFSMax) / 3000) * 100;
+                verySlowWidth = (minCFS / maxCFS) * 100;
+                slowWidth = showSlow ? ((optCFSMin - minCFS) / maxCFS) * 100 : 0;
+                optimalWidth = ((optCFSMax - optCFSMin) / maxCFS) * 100;
+                fastUnsafeWidth = ((maxCFS - optCFSMax) / maxCFS) * 100;
 
                 verySlowSection.style.width = `${verySlowWidth}%`;
                 slowSection.style.width = `${slowWidth}%`;
@@ -328,14 +330,14 @@
                 keyVerySlowText.textContent = `Very Slow (0 CFS to ${minCFS} CFS)`;
                 keySlowText.textContent = showSlow ? `Slow (${minCFS} CFS to ${optCFSMin} CFS)` : 'Slow (0 CFS)';
                 keyOptimalText.textContent = `Optimal (${optCFSMin} CFS to ${optCFSMax} CFS)`;
-                keyFastUnsafeText.textContent = `Fast/Unsafe (${optCFSMax} CFS to 3000 CFS)`;
+                keyFastUnsafeText.textContent = `Fast/Unsafe (${optCFSMax} CFS to ${maxCFS} CFS)`;
 
                 keyVerySlowText.parentElement.style.display = verySlowWidth > 0 ? 'flex' : 'none';
                 keySlowText.parentElement.style.display = slowWidth > 0 ? 'flex' : 'none';
                 keyOptimalText.parentElement.style.display = optimalWidth > 0 ? 'flex' : 'none';
                 keyFastUnsafeText.parentElement.style.display = fastUnsafeWidth > 0 ? 'flex' : 'none';
 
-                const pointerPosition = (flowRate / 3000) * 100;
+                const pointerPosition = (flowRate / maxCFS) * 100;
                 pointer.style.left = `${pointerPosition}%`;
             }
 
