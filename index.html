@@ -53,62 +53,6 @@
             color: lightgray;
         }
 
-        .gauge-container {
-            position: relative;
-            width: 100%;
-            height: 60px;
-            margin-top: 40px; /* Increased margin for more space */
-        }
-
-        .gauge {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .gauge div {
-            height: 100%;
-            position: relative;
-        }
-
-        .very-slow {
-            background: gray;
-            z-index: 1;
-        }
-
-        .slow {
-            background: yellow;
-            z-index: 1;
-        }
-
-        .optimal {
-            background: green;
-            z-index: 1;
-        }
-
-        .fast-unsafe {
-            background: red;
-            z-index: 1;
-        }
-
-        .pointer {
-            position: absolute;
-            top: -15px; /* Adjusted positioning */
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 15px solid #333;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: left 0.3s ease;
-            display: block; /* Ensure it is visible */
-            z-index: 2; /* Ensure it appears above the gauge sections */
-        }
-
         .vessel-select {
             display: flex;
             margin: 20px 0;
@@ -127,6 +71,44 @@
         .segment.selected {
             background: #b2ebf2;
             border: 1px solid #4682b4;
+        }
+
+        .bar-chart {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin-top: 40px;
+            display: flex;
+        }
+
+        .bar-section {
+            flex: 1;
+            position: relative;
+        }
+
+        .bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: #4682b4;
+            text-align: center;
+            color: white;
+        }
+
+        .very-slow {
+            background: gray;
+        }
+
+        .slow {
+            background: yellow;
+        }
+
+        .optimal {
+            background: green;
+        }
+
+        .fast-unsafe {
+            background: red;
         }
 
         .key {
@@ -192,13 +174,18 @@
             <div class="segment" id="vessel-paddleboard-river" data-vessel="paddleboard-river">Paddle board with river fin(s)</div>
             <div class="segment" id="vessel-kayak" data-vessel="kayak">Kayak</div>
         </div>
-        <div class="gauge-container">
-            <div class="gauge" id="gauge">
-                <div class="very-slow" id="very-slow"></div>
-                <div class="slow" id="slow"></div>
-                <div class="optimal" id="optimal"></div>
-                <div class="fast-unsafe" id="fast-unsafe"></div>
-                <div class="pointer" id="pointer"></div>
+        <div class="bar-chart" id="bar-chart">
+            <div class="bar-section very-slow" id="very-slow-bar">
+                <div class="bar" id="very-slow-bar-height">0</div>
+            </div>
+            <div class="bar-section slow" id="slow-bar">
+                <div class="bar" id="slow-bar-height">0</div>
+            </div>
+            <div class="bar-section optimal" id="optimal-bar">
+                <div class="bar" id="optimal-bar-height">0</div>
+            </div>
+            <div class="bar-section fast-unsafe" id="fast-unsafe-bar">
+                <div class="bar" id="fast-unsafe-bar-height">0</div>
             </div>
         </div>
         <div class="key">
@@ -207,7 +194,7 @@
             <div class="key-item"><div class="key-color" style="background: green;"></div><span id="key-optimal-text">Optimal (800 CFS to 2000 CFS)</span></div>
             <div class="key-item"><div class="key-color" style="background: red;"></div><span id="key-fast-unsafe-text">Fast/Unsafe (2000 CFS to 2500 CFS)</span></div>
         </div>
-        <div class="version">v2.7.5</div>
+        <div class="version">v2.8.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -221,12 +208,14 @@
             const precipitationElement = document.getElementById('precipitation');
             const lastUpdateElement = document.getElementById('last-update');
             const vesselSegments = document.querySelectorAll('.segment');
-            const pointer = document.getElementById('pointer');
-            const gauge = document.getElementById('gauge');
-            const verySlowSection = document.getElementById('very-slow');
-            const slowSection = document.getElementById('slow');
-            const optimalSection = document.getElementById('optimal');
-            const fastUnsafeSection = document.getElementById('fast-unsafe');
+            const verySlowBar = document.getElementById('very-slow-bar-height');
+            const slowBar = document.getElementById('slow-bar-height');
+            const optimalBar = document.getElementById('optimal-bar-height');
+            const fastUnsafeBar = document.getElementById('fast-unsafe-bar-height');
+            const verySlowBarSection = document.getElementById('very-slow-bar');
+            const slowBarSection = document.getElementById('slow-bar');
+            const optimalBarSection = document.getElementById('optimal-bar');
+            const fastUnsafeBarSection = document.getElementById('fast-unsafe-bar');
             const keyVerySlowText = document.getElementById('key-very-slow-text');
             const keySlowText = document.getElementById('key-slow-text');
             const keyOptimalText = document.getElementById('key-optimal-text');
@@ -284,7 +273,7 @@
                     precipitationElement.textContent = `Precipitation: ${precipitation} in`;
                     lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
 
-                    updateGauge(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
+                    updateChart(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
                     flowDataElement.textContent = 'Error fetching data';
@@ -294,9 +283,9 @@
                 }
             }
 
-            function updateGauge(flowRate, vessel) {
-                logDebugMessage(`Updating gauge with flowRate: ${flowRate} and vessel: ${vessel}`);
-                let minCFS, optCFSMin, optCFSMax, verySlowWidth, slowWidth, optimalWidth, fastUnsafeWidth;
+            function updateChart(flowRate, vessel) {
+                logDebugMessage(`Updating chart with flowRate: ${flowRate} and vessel: ${vessel}`);
+                let minCFS, optCFSMin, optCFSMax;
                 let showSlow = true;
 
                 const maxCFS = flowRate > 2500 ? flowRate : 2500;
@@ -325,36 +314,29 @@
                         break;
                 }
 
-                verySlowWidth = (minCFS / maxCFS) * 100;
-                slowWidth = showSlow ? ((optCFSMin - minCFS) / maxCFS) * 100 : 0;
-                optimalWidth = ((optCFSMax - optCFSMin) / maxCFS) * 100;
-                fastUnsafeWidth = ((maxCFS - optCFSMax) / maxCFS) * 100;
+                const verySlowHeight = (minCFS / maxCFS) * 100;
+                const slowHeight = showSlow ? ((optCFSMin - minCFS) / maxCFS) * 100 : 0;
+                const optimalHeight = ((optCFSMax - optCFSMin) / maxCFS) * 100;
+                const fastUnsafeHeight = ((maxCFS - optCFSMax) / maxCFS) * 100;
 
-                verySlowSection.style.width = `${verySlowWidth}%`;
-                slowSection.style.width = `${slowWidth}%`;
-                optimalSection.style.width = `${optimalWidth}%`;
-                fastUnsafeSection.style.width = `${fastUnsafeWidth}%`;
+                verySlowBar.style.height = `${verySlowHeight}%`;
+                slowBar.style.height = `${slowHeight}%`;
+                optimalBar.style.height = `${optimalHeight}%`;
+                fastUnsafeBar.style.height = `${fastUnsafeHeight}%`;
+
+                verySlowBarSection.style.display = verySlowHeight > 0 ? 'block' : 'none';
+                slowBarSection.style.display = slowHeight > 0 ? 'block' : 'none';
+                optimalBarSection.style.display = optimalHeight > 0 ? 'block' : 'none';
+                fastUnsafeBarSection.style.display = fastUnsafeHeight > 0 ? 'block' : 'none';
 
                 keyVerySlowText.textContent = `Very Slow (0 CFS to ${minCFS} CFS)`;
                 keySlowText.textContent = showSlow ? `Slow (${minCFS} CFS to ${optCFSMin} CFS)` : 'Slow (0 CFS)';
                 keyOptimalText.textContent = `Optimal (${optCFSMin} CFS to ${optCFSMax} CFS)`;
                 keyFastUnsafeText.textContent = `Fast/Unsafe (${optCFSMax} CFS to ${maxCFS} CFS)`;
 
-                keyVerySlowText.parentElement.style.display = verySlowWidth > 0 ? 'flex' : 'none';
-                keySlowText.parentElement.style.display = slowWidth > 0 ? 'flex' : 'none';
-                keyOptimalText.parentElement.style.display = optimalWidth > 0 ? 'flex' : 'none';
-                keyFastUnsafeText.parentElement.style.display = fastUnsafeWidth > 0 ? 'flex' : 'none';
-
-                const pointerPosition = (flowRate / maxCFS) * 100;
-                logDebugMessage(`Pointer position: ${pointerPosition}%`); // Debug log for pointer position
-                pointer.style.left = `${pointerPosition}%`;
-                pointer.style.display = 'block'; // Ensure the pointer is visible
-                pointer.style.zIndex = '2'; // Ensure the pointer is above the gauge sections
-                logDebugMessage(`Pointer style: ${pointer.style.cssText}`); // Log the pointer's style
-                if (!gauge.contains(pointer)) {
-                    logDebugMessage("Pointer is not in the gauge. Appending it.");
-                    gauge.appendChild(pointer);
-                }
+                const pointerHeight = (flowRate / maxCFS) * 100;
+                logDebugMessage(`Pointer height: ${pointerHeight}%`); // Debug log for pointer height
+                document.documentElement.style.setProperty('--pointer-height', `${pointerHeight}%`);
             }
 
             vesselSegments.forEach(segment => {
@@ -363,7 +345,7 @@
                     segment.classList.add('selected');
                     logDebugMessage("Vessel selected: " + segment.getAttribute('data-vessel'));
                     const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
-                    updateGauge(flowRate, segment.getAttribute('data-vessel'));
+                    updateChart(flowRate, segment.getAttribute('data-vessel'));
                 });
             });
 
