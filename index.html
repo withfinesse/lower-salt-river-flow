@@ -66,10 +66,12 @@
             height: 100%;
             border-radius: 10px;
             overflow: hidden;
+            position: relative;
         }
 
         .gauge div {
             height: 100%;
+            position: relative;
         }
 
         .very-slow {
@@ -120,13 +122,14 @@
             border: 1px solid #4682b4;
         }
 
-        .condition-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 1em;
+        .section-label {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
             font-weight: bold;
-            color: #333;
+            font-size: 0.9em;
         }
 
         .console-toggle {
@@ -168,22 +171,16 @@
             <div class="segment" id="vessel-paddleboard-river" data-vessel="paddleboard-river">Paddle board with river fin(s)</div>
             <div class="segment" id="vessel-kayak" data-vessel="kayak">Kayak</div>
         </div>
-        <div class="condition-labels">
-            <div>Very Slow</div>
-            <div>Slow</div>
-            <div>Optimal</div>
-            <div>Fast/Unsafe</div>
-        </div>
         <div class="gauge-container">
             <div class="gauge" id="gauge">
-                <div class="very-slow" id="very-slow"></div>
-                <div class="slow" id="slow"></div>
-                <div class="optimal" id="optimal"></div>
-                <div class="fast-unsafe" id="fast-unsafe"></div>
+                <div class="very-slow" id="very-slow"><div class="section-label" id="very-slow-label"></div></div>
+                <div class="slow" id="slow"><div class="section-label" id="slow-label"></div></div>
+                <div class="optimal" id="optimal"><div class="section-label" id="optimal-label"></div></div>
+                <div class="fast-unsafe" id="fast-unsafe"><div class="section-label" id="fast-unsafe-label"></div></div>
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v2.4.0</div>
+        <div class="version">v2.4.1</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -203,6 +200,10 @@
             const slowSection = document.getElementById('slow');
             const optimalSection = document.getElementById('optimal');
             const fastUnsafeSection = document.getElementById('fast-unsafe');
+            const verySlowLabel = document.getElementById('very-slow-label');
+            const slowLabel = document.getElementById('slow-label');
+            const optimalLabel = document.getElementById('optimal-label');
+            const fastUnsafeLabel = document.getElementById('fast-unsafe-label');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
 
@@ -303,6 +304,16 @@
                 slowSection.style.width = `${slowWidth}%`;
                 optimalSection.style.width = `${optimalWidth}%`;
                 fastUnsafeSection.style.width = `${fastUnsafeWidth}%`;
+
+                verySlowLabel.textContent = `Very Slow (0 CFS to ${minCFS} CFS)`;
+                slowLabel.textContent = showSlow ? `Slow (${minCFS} CFS to ${optCFSMin} CFS)` : '';
+                optimalLabel.textContent = `Optimal (${optCFSMin} CFS to ${optCFSMax} CFS)`;
+                fastUnsafeLabel.textContent = `Fast/Unsafe (${optCFSMax} CFS to 3000 CFS)`;
+
+                verySlowLabel.style.display = verySlowWidth > 0 ? 'block' : 'none';
+                slowLabel.style.display = slowWidth > 0 ? 'block' : 'none';
+                optimalLabel.style.display = optimalWidth > 0 ? 'block' : 'none';
+                fastUnsafeLabel.style.display = fastUnsafeWidth > 0 ? 'block' : 'none';
 
                 const pointerPosition = (flowRate / 3000) * 100;
                 pointer.style.left = `${pointerPosition}%`;
