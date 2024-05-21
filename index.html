@@ -101,7 +101,7 @@
             display: flex;
             margin: 20px 0;
         }
-        
+
         .segment {
             flex: 1;
             padding: 10px 0;
@@ -178,7 +178,7 @@
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v2.2.1</div>
+        <div class="version">v2.3.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -245,7 +245,7 @@
                     precipitationElement.textContent = `Precipitation: ${precipitation} in`;
                     lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
 
-                    updateGauge(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
+                    updateGauge(discharge, gageHeight, document.querySelector('.segment.selected').getAttribute('data-vessel'));
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
                     flowDataElement.textContent = 'Error fetching data';
@@ -255,34 +255,47 @@
                 }
             }
 
-            function updateGauge(flowRate, vessel) {
-                logDebugMessage("Updating gauge with flowRate: " + flowRate + " and vessel: " + vessel);
+            function updateGauge(flowRate, gageHeight, vessel) {
+                logDebugMessage(`Updating gauge with flowRate: ${flowRate}, gageHeight: ${gageHeight}, and vessel: ${vessel}`);
                 let pointerPosition = 0;
 
-                if (vessel === 'tube') {
-                    if (flowRate >= 300 && flowRate <= 500) {
-                        pointerPosition = (flowRate - 300) / 200 * 33; // 0 to 33%
-                    } else if (flowRate > 500) {
-                        pointerPosition = 33 + (flowRate - 500) / 1000 * 67; // 33% to 100%
-                    }
-                } else if (vessel === 'paddleboard-shallow') {
-                    if (flowRate >= 300 && flowRate <= 700) {
-                        pointerPosition = (flowRate - 300) / 400 * 33; // 0 to 33%
-                    } else if (flowRate > 700) {
-                        pointerPosition = 33 + (flowRate - 700) / 800 * 67; // 33% to 100%
-                    }
-                } else if (vessel === 'paddleboard-river') {
-                    if (flowRate >= 500 && flowRate <= 800) {
-                        pointerPosition = (flowRate - 500) / 300 * 33; // 0 to 33%
-                    } else if (flowRate > 800) {
-                        pointerPosition = 33 + (flowRate - 800) / 700 * 67; // 33% to 100%
-                    }
-                } else if (vessel === 'kayak') {
-                    if (flowRate >= 500 && flowRate <= 1500) {
-                        pointerPosition = (flowRate - 500) / 1000 * 100; // 0 to 100%
-                    } else if (flowRate > 1500) {
-                        pointerPosition = 100;
-                    }
+                switch (vessel) {
+                    case 'tube':
+                        if (flowRate >= 800 && flowRate <= 2000) {
+                            pointerPosition = (flowRate - 800) / 1200 * 100; // Scale from 0 to 100%
+                        } else if (flowRate < 800) {
+                            pointerPosition = 0; // Poor
+                        } else {
+                            pointerPosition = 100; // Good
+                        }
+                        break;
+                    case 'paddleboard-shallow':
+                        if (flowRate >= 600 && flowRate <= 1200) {
+                            pointerPosition = (flowRate - 600) / 600 * 100; // Scale from 0 to 100%
+                        } else if (flowRate < 600) {
+                            pointerPosition = 0; // Poor
+                        } else {
+                            pointerPosition = 100; // Good
+                        }
+                        break;
+                    case 'paddleboard-river':
+                        if (flowRate >= 700 && flowRate <= 1200) {
+                            pointerPosition = (flowRate - 700) / 500 * 100; // Scale from 0 to 100%
+                        } else if (flowRate < 700) {
+                            pointerPosition = 0; // Poor
+                        } else {
+                            pointerPosition = 100; // Good
+                        }
+                        break;
+                    case 'kayak':
+                        if (flowRate >= 800 && flowRate <= 1500) {
+                            pointerPosition = (flowRate - 800) / 700 * 100; // Scale from 0 to 100%
+                        } else if (flowRate < 800) {
+                            pointerPosition = 0; // Poor
+                        } else {
+                            pointerPosition = 100; // Good
+                        }
+                        break;
                 }
 
                 pointer.style.left = `${pointerPosition}%`;
@@ -294,7 +307,8 @@
                     segment.classList.add('selected');
                     logDebugMessage("Vessel selected: " + segment.getAttribute('data-vessel'));
                     const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
-                    updateGauge(flowRate, segment.getAttribute('data-vessel'));
+                    const gageHeight = parseFloat(gageHeightElement.textContent.split(': ')[1]);
+                    updateGauge(flowRate, gageHeight, segment.getAttribute('data-vessel'));
                 });
             });
 
