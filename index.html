@@ -98,6 +98,7 @@
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
             border-top: 30px solid #333;
+            left: 50%;
             transform: translateX(-50%);
             transition: left 0.3s ease;
         }
@@ -200,7 +201,7 @@
             <div class="key-item"><div class="key-color" style="background: green;"></div><span id="key-optimal-text">Optimal (800 CFS to 2000 CFS)</span></div>
             <div class="key-item"><div class="key-color" style="background: red;"></div><span id="key-fast-unsafe-text">Fast/Unsafe (2000 CFS to 2500 CFS)</span></div>
         </div>
-        <div class="version">v2.7.1</div>
+        <div class="version">v2.7.2</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -231,6 +232,7 @@
                 const logEntry = document.createElement('div');
                 logEntry.textContent = message;
                 debugLog.appendChild(logEntry);
+                console.log(message); // Also log to browser console for easier debugging
             }
 
             toggleConsole.addEventListener('click', function() {
@@ -338,8 +340,8 @@
                 keyFastUnsafeText.parentElement.style.display = fastUnsafeWidth > 0 ? 'flex' : 'none';
 
                 const pointerPosition = (flowRate / maxCFS) * 100;
+                logDebugMessage(`Pointer position: ${pointerPosition}%`); // Debug log for pointer position
                 pointer.style.left = `${pointerPosition}%`;
-                logDebugMessage(`Pointer position: ${pointerPosition}%`);
             }
 
             vesselSegments.forEach(segment => {
