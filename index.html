@@ -101,11 +101,8 @@
             margin: 20px 0;
         }
 
-        select {
-            padding: 10px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+        .vessel-option {
+            margin: 5px 0;
         }
 
         .condition-labels {
@@ -156,13 +153,23 @@
         <div id="precipitation" class="data">Loading...</div>
         <div id="last-update" class="data">Loading...</div>
         <div class="vessel-select">
-            <label for="vessel">Select your vessel:</label>
-            <select id="vessel">
-                <option value="tube">Tube</option>
-                <option value="paddleboard-shallow">Paddle board (no fin(s)/shallow fin(s))</option>
-                <option value="paddleboard-river">Paddle board with river fin(s)</option>
-                <option value="kayak">Kayak</option>
-            </select>
+            <label for="vessel">Vessel:</label>
+            <div class="vessel-option">
+                <input type="radio" id="tube" name="vessel" value="tube" checked>
+                <label for="tube">Tube</label>
+            </div>
+            <div class="vessel-option">
+                <input type="radio" id="paddleboard-shallow" name="vessel" value="paddleboard-shallow">
+                <label for="paddleboard-shallow">Paddle board</label>
+            </div>
+            <div class="vessel-option">
+                <input type="radio" id="paddleboard-river" name="vessel" value="paddleboard-river">
+                <label for="paddleboard-river">Paddle board with river fin(s)</label>
+            </div>
+            <div class="vessel-option">
+                <input type="radio" id="kayak" name="vessel" value="kayak">
+                <label for="kayak">Kayak</label>
+            </div>
         </div>
         <div class="condition-labels">
             <div class="condition-label">Poor</div>
@@ -177,7 +184,7 @@
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v2.0.1</div>
+        <div class="version">v2.1.1</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -190,7 +197,7 @@
             const gageHeightElement = document.getElementById('gage-height');
             const precipitationElement = document.getElementById('precipitation');
             const lastUpdateElement = document.getElementById('last-update');
-            const vesselSelect = document.getElementById('vessel');
+            const vesselOptions = document.getElementsByName('vessel');
             const pointer = document.getElementById('pointer');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
@@ -239,12 +246,12 @@
                     logDebugMessage("Precipitation: " + precipitation);
                     logDebugMessage("Last Update Time: " + lastUpdateTime);
 
-                    flowDataElement.textContent = `Current Flow Rate: ${discharge} cubic feet per second`;
-                    gageHeightElement.textContent = `Current Gage Height: ${gageHeight} feet`;
-                    precipitationElement.textContent = `Precipitation: ${precipitation} inches`;
+                    flowDataElement.textContent = `Current Flow Rate: ${discharge} cfs`;
+                    gageHeightElement.textContent = `Current Gage Height: ${gageHeight} ft`;
+                    precipitationElement.textContent = `Precipitation: ${precipitation} in`;
                     lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
 
-                    updateGauge(discharge, vesselSelect.value);
+                    updateGauge(discharge, document.querySelector('input[name="vessel"]:checked').value);
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
                     flowDataElement.textContent = 'Error fetching data';
@@ -287,10 +294,12 @@
                 pointer.style.left = `${pointerPosition}%`;
             }
 
-            vesselSelect.addEventListener('change', function() {
-                logDebugMessage("Vessel selected: " + vesselSelect.value);
-                const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
-                updateGauge(flowRate, vesselSelect.value);
+            vesselOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    logDebugMessage("Vessel selected: " + option.value);
+                    const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
+                    updateGauge(flowRate, option.value);
+                });
             });
 
             fetchWaterData();
