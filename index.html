@@ -99,27 +99,22 @@
 
         .vessel-select {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
             margin: 20px 0;
         }
-
-        .vessel-option {
+        
+        .segment {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #ccc;
             background: #e0f7fa;
-            border-radius: 10px;
-            padding: 15px;
-            width: 45%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            transition: background 0.2s, border 0.2s;
         }
 
-        .vessel-option:hover {
-            transform: scale(1.05);
-        }
-
-        .vessel-option input {
-            margin-right: 10px;
+        .segment.selected {
+            background: #b2ebf2;
+            border: 1px solid #4682b4;
         }
 
         .condition-labels {
@@ -165,22 +160,10 @@
         <div id="precipitation" class="data">Loading...</div>
         <div id="last-update" class="data">Loading...</div>
         <div class="vessel-select">
-            <div class="vessel-option">
-                <input type="radio" id="tube" name="vessel" value="tube" checked>
-                <label for="tube">Tube</label>
-            </div>
-            <div class="vessel-option">
-                <input type="radio" id="paddleboard-shallow" name="vessel" value="paddleboard-shallow">
-                <label for="paddleboard-shallow">Paddle board</label>
-            </div>
-            <div class="vessel-option">
-                <input type="radio" id="paddleboard-river" name="vessel" value="paddleboard-river">
-                <label for="paddleboard-river">Paddle board with river fin(s)</label>
-            </div>
-            <div class="vessel-option">
-                <input type="radio" id="kayak" name="vessel" value="kayak">
-                <label for="kayak">Kayak</label>
-            </div>
+            <div class="segment selected" id="vessel-tube" data-vessel="tube">Tube</div>
+            <div class="segment" id="vessel-paddleboard-shallow" data-vessel="paddleboard-shallow">Paddle board</div>
+            <div class="segment" id="vessel-paddleboard-river" data-vessel="paddleboard-river">Paddle board with river fin(s)</div>
+            <div class="segment" id="vessel-kayak" data-vessel="kayak">Kayak</div>
         </div>
         <div class="condition-labels">
             <div>Poor</div>
@@ -195,7 +178,7 @@
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v2.2.0</div>
+        <div class="version">v2.2.1</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -208,7 +191,7 @@
             const gageHeightElement = document.getElementById('gage-height');
             const precipitationElement = document.getElementById('precipitation');
             const lastUpdateElement = document.getElementById('last-update');
-            const vesselOptions = document.getElementsByName('vessel');
+            const vesselSegments = document.querySelectorAll('.segment');
             const pointer = document.getElementById('pointer');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
@@ -262,7 +245,7 @@
                     precipitationElement.textContent = `Precipitation: ${precipitation} in`;
                     lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
 
-                    updateGauge(discharge, document.querySelector('input[name="vessel"]:checked').value);
+                    updateGauge(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
                     flowDataElement.textContent = 'Error fetching data';
@@ -305,11 +288,13 @@
                 pointer.style.left = `${pointerPosition}%`;
             }
 
-            vesselOptions.forEach(option => {
-                option.addEventListener('change', function() {
-                    logDebugMessage("Vessel selected: " + option.value);
+            vesselSegments.forEach(segment => {
+                segment.addEventListener('click', function() {
+                    vesselSegments.forEach(seg => seg.classList.remove('selected'));
+                    segment.classList.add('selected');
+                    logDebugMessage("Vessel selected: " + segment.getAttribute('data-vessel'));
                     const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
-                    updateGauge(flowRate, option.value);
+                    updateGauge(flowRate, segment.getAttribute('data-vessel'));
                 });
             });
 
