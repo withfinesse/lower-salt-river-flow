@@ -98,27 +98,36 @@
         }
 
         .vessel-select {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
             margin: 20px 0;
         }
 
         .vessel-option {
-            margin: 5px 0;
-            text-align: left;
+            background: #e0f7fa;
+            border-radius: 10px;
+            padding: 15px;
+            width: 45%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .vessel-option:hover {
+            transform: scale(1.05);
+        }
+
+        .vessel-option input {
+            margin-right: 10px;
         }
 
         .condition-labels {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
+            justify-content: space-between;
             margin-top: 10px;
             font-size: 1em;
             font-weight: bold;
-        }
-
-        .condition-label {
-            text-align: center;
             color: #333;
         }
 
@@ -174,9 +183,9 @@
             </div>
         </div>
         <div class="condition-labels">
-            <div class="condition-label">Poor</div>
-            <div class="condition-label">Acceptable</div>
-            <div class="condition-label">Good</div>
+            <div>Poor</div>
+            <div>Acceptable</div>
+            <div>Good</div>
         </div>
         <div class="gauge-container">
             <div class="gauge">
@@ -186,7 +195,7 @@
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v2.1.2</div>
+        <div class="version">v2.2.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
