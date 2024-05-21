@@ -73,44 +73,6 @@
             border: 1px solid #4682b4;
         }
 
-        .bar-chart {
-            position: relative;
-            width: 100%;
-            height: 200px;
-            margin-top: 40px;
-            display: flex;
-        }
-
-        .bar-section {
-            flex: 1;
-            position: relative;
-        }
-
-        .bar {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: #4682b4;
-            text-align: center;
-            color: white;
-        }
-
-        .very-slow {
-            background: gray;
-        }
-
-        .slow {
-            background: yellow;
-        }
-
-        .optimal {
-            background: green;
-        }
-
-        .fast-unsafe {
-            background: red;
-        }
-
         .key {
             margin-top: 20px;
             text-align: left;
@@ -156,7 +118,13 @@
             margin-right: 10px;
         }
 
+        .gauge-container {
+            margin-top: 20px;
+        }
+
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-gauge@1.0.0/dist/chartjs-gauge.min.js"></script>
 </head>
 <body>
     <div class="header">
@@ -174,19 +142,8 @@
             <div class="segment" id="vessel-paddleboard-river" data-vessel="paddleboard-river">Paddle board with river fin(s)</div>
             <div class="segment" id="vessel-kayak" data-vessel="kayak">Kayak</div>
         </div>
-        <div class="bar-chart" id="bar-chart">
-            <div class="bar-section very-slow" id="very-slow-bar">
-                <div class="bar" id="very-slow-bar-height">0</div>
-            </div>
-            <div class="bar-section slow" id="slow-bar">
-                <div class="bar" id="slow-bar-height">0</div>
-            </div>
-            <div class="bar-section optimal" id="optimal-bar">
-                <div class="bar" id="optimal-bar-height">0</div>
-            </div>
-            <div class="bar-section fast-unsafe" id="fast-unsafe-bar">
-                <div class="bar" id="fast-unsafe-bar-height">0</div>
-            </div>
+        <div class="gauge-container">
+            <canvas id="gaugeChart" width="400" height="200"></canvas>
         </div>
         <div class="key">
             <div class="key-item"><div class="key-color" style="background: gray;"></div><span id="key-very-slow-text">Very Slow (0 CFS to 800 CFS)</span></div>
@@ -208,20 +165,15 @@
             const precipitationElement = document.getElementById('precipitation');
             const lastUpdateElement = document.getElementById('last-update');
             const vesselSegments = document.querySelectorAll('.segment');
-            const verySlowBar = document.getElementById('very-slow-bar-height');
-            const slowBar = document.getElementById('slow-bar-height');
-            const optimalBar = document.getElementById('optimal-bar-height');
-            const fastUnsafeBar = document.getElementById('fast-unsafe-bar-height');
-            const verySlowBarSection = document.getElementById('very-slow-bar');
-            const slowBarSection = document.getElementById('slow-bar');
-            const optimalBarSection = document.getElementById('optimal-bar');
-            const fastUnsafeBarSection = document.getElementById('fast-unsafe-bar');
             const keyVerySlowText = document.getElementById('key-very-slow-text');
             const keySlowText = document.getElementById('key-slow-text');
             const keyOptimalText = document.getElementById('key-optimal-text');
             const keyFastUnsafeText = document.getElementById('key-fast-unsafe-text');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
+            const ctx = document.getElementById('gaugeChart').getContext('2d');
+
+            let gaugeChart;
 
             function logDebugMessage(message) {
                 const logEntry = document.createElement('div');
@@ -273,7 +225,7 @@
                     precipitationElement.textContent = `Precipitation: ${precipitation} in`;
                     lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
 
-                    updateChart(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
+                    updateGauge(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
                     flowDataElement.textContent = 'Error fetching data';
@@ -283,8 +235,38 @@
                 }
             }
 
-            function updateChart(flowRate, vessel) {
-                logDebugMessage(`Updating chart with flowRate: ${flowRate} and vessel: ${vessel}`);
+            function createGaugeChart() {
+                gaugeChart = new Chart(ctx, {
+                    type: 'gauge',
+                    data: {
+                        datasets: [{
+                            value: 0,
+                            data: [0, 0, 0, 0],
+                            backgroundColor: ['gray', 'yellow', 'green', 'red']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        needle: {
+                            radiusPercentage: 2,
+                            widthPercentage: 3.2,
+                            lengthPercentage: 80,
+                            color: 'rgba(0, 0, 0, 1)'
+                        },
+                        valueLabel: {
+                            formatter: Math.round
+                        },
+                        plugins: {
+                            datalabels: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateGauge(flowRate, vessel) {
+                logDebugMessage(`Updating gauge with flowRate: ${flowRate} and vessel: ${vessel}`);
                 let minCFS, optCFSMin, optCFSMax;
                 let showSlow = true;
 
@@ -314,29 +296,21 @@
                         break;
                 }
 
-                const verySlowHeight = (minCFS / maxCFS) * 100;
-                const slowHeight = showSlow ? ((optCFSMin - minCFS) / maxCFS) * 100 : 0;
-                const optimalHeight = ((optCFSMax - optCFSMin) / maxCFS) * 100;
-                const fastUnsafeHeight = ((maxCFS - optCFSMax) / maxCFS) * 100;
+                const data = [
+                    minCFS,
+                    showSlow ? optCFSMin - minCFS : 0,
+                    optCFSMax - optCFSMin,
+                    maxCFS - optCFSMax
+                ];
 
-                verySlowBar.style.height = `${verySlowHeight}%`;
-                slowBar.style.height = `${slowHeight}%`;
-                optimalBar.style.height = `${optimalHeight}%`;
-                fastUnsafeBar.style.height = `${fastUnsafeHeight}%`;
-
-                verySlowBarSection.style.display = verySlowHeight > 0 ? 'block' : 'none';
-                slowBarSection.style.display = slowHeight > 0 ? 'block' : 'none';
-                optimalBarSection.style.display = optimalHeight > 0 ? 'block' : 'none';
-                fastUnsafeBarSection.style.display = fastUnsafeHeight > 0 ? 'block' : 'none';
+                gaugeChart.data.datasets[0].data = data;
+                gaugeChart.data.datasets[0].value = flowRate;
+                gaugeChart.update();
 
                 keyVerySlowText.textContent = `Very Slow (0 CFS to ${minCFS} CFS)`;
                 keySlowText.textContent = showSlow ? `Slow (${minCFS} CFS to ${optCFSMin} CFS)` : 'Slow (0 CFS)';
                 keyOptimalText.textContent = `Optimal (${optCFSMin} CFS to ${optCFSMax} CFS)`;
                 keyFastUnsafeText.textContent = `Fast/Unsafe (${optCFSMax} CFS to ${maxCFS} CFS)`;
-
-                const pointerHeight = (flowRate / maxCFS) * 100;
-                logDebugMessage(`Pointer height: ${pointerHeight}%`); // Debug log for pointer height
-                document.documentElement.style.setProperty('--pointer-height', `${pointerHeight}%`);
             }
 
             vesselSegments.forEach(segment => {
@@ -345,10 +319,11 @@
                     segment.classList.add('selected');
                     logDebugMessage("Vessel selected: " + segment.getAttribute('data-vessel'));
                     const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
-                    updateChart(flowRate, segment.getAttribute('data-vessel'));
+                    updateGauge(flowRate, segment.getAttribute('data-vessel'));
                 });
             });
 
+            createGaugeChart();
             fetchWaterData();
         });
     </script>
