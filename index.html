@@ -76,18 +76,22 @@
 
         .very-slow {
             background: gray;
+            z-index: 1;
         }
 
         .slow {
             background: yellow;
+            z-index: 1;
         }
 
         .optimal {
             background: green;
+            z-index: 1;
         }
 
         .fast-unsafe {
             background: red;
+            z-index: 1;
         }
 
         .pointer {
@@ -102,6 +106,7 @@
             transform: translateX(-50%);
             transition: left 0.3s ease;
             display: block; /* Ensure it is visible */
+            z-index: 2; /* Ensure it appears above the gauge sections */
         }
 
         .vessel-select {
@@ -202,7 +207,7 @@
             <div class="key-item"><div class="key-color" style="background: green;"></div><span id="key-optimal-text">Optimal (800 CFS to 2000 CFS)</span></div>
             <div class="key-item"><div class="key-color" style="background: red;"></div><span id="key-fast-unsafe-text">Fast/Unsafe (2000 CFS to 2500 CFS)</span></div>
         </div>
-        <div class="version">v2.7.4</div>
+        <div class="version">v2.7.5</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -344,6 +349,7 @@
                 logDebugMessage(`Pointer position: ${pointerPosition}%`); // Debug log for pointer position
                 pointer.style.left = `${pointerPosition}%`;
                 pointer.style.display = 'block'; // Ensure the pointer is visible
+                pointer.style.zIndex = '2'; // Ensure the pointer is above the gauge sections
                 logDebugMessage(`Pointer style: ${pointer.style.cssText}`); // Log the pointer's style
                 if (!gauge.contains(pointer)) {
                     logDebugMessage("Pointer is not in the gauge. Appending it.");
