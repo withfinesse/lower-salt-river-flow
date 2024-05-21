@@ -161,6 +161,12 @@
             font-size: 0.9em;
             color: #333;
         }
+
+        .key-label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -189,12 +195,12 @@
             </div>
         </div>
         <div class="key">
-            <div class="key-item"><div class="key-color" id="key-very-slow"></div><span id="key-very-slow-text"></span></div>
-            <div class="key-item"><div class="key-color" id="key-slow"></div><span id="key-slow-text"></span></div>
-            <div class="key-item"><div class="key-color" id="key-optimal"></div><span id="key-optimal-text"></span></div>
-            <div class="key-item"><div class="key-color" id="key-fast-unsafe"></div><span id="key-fast-unsafe-text"></span></div>
+            <div class="key-item"><div class="key-color" style="background: gray;"></div><span id="key-very-slow-text">Very Slow (0 CFS to 800 CFS)</span></div>
+            <div class="key-item"><div class="key-color" style="background: yellow;"></div><span id="key-slow-text">Slow (800 CFS to 800 CFS)</span></div>
+            <div class="key-item"><div class="key-color" style="background: green;"></div><span id="key-optimal-text">Optimal (800 CFS to 2000 CFS)</span></div>
+            <div class="key-item"><div class="key-color" style="background: red;"></div><span id="key-fast-unsafe-text">Fast/Unsafe (2000 CFS to 3000 CFS)</span></div>
         </div>
-        <div class="version">v2.5.1</div>
+        <div class="version">v2.6.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -214,10 +220,6 @@
             const slowSection = document.getElementById('slow');
             const optimalSection = document.getElementById('optimal');
             const fastUnsafeSection = document.getElementById('fast-unsafe');
-            const keyVerySlow = document.getElementById('key-very-slow');
-            const keySlow = document.getElementById('key-slow');
-            const keyOptimal = document.getElementById('key-optimal');
-            const keyFastUnsafe = document.getElementById('key-fast-unsafe');
             const keyVerySlowText = document.getElementById('key-very-slow-text');
             const keySlowText = document.getElementById('key-slow-text');
             const keyOptimalText = document.getElementById('key-optimal-text');
@@ -324,14 +326,14 @@
                 fastUnsafeSection.style.width = `${fastUnsafeWidth}%`;
 
                 keyVerySlowText.textContent = `Very Slow (0 CFS to ${minCFS} CFS)`;
-                keySlowText.textContent = showSlow ? `Slow (${minCFS} CFS to ${optCFSMin} CFS)` : '';
+                keySlowText.textContent = showSlow ? `Slow (${minCFS} CFS to ${optCFSMin} CFS)` : 'Slow (0 CFS)';
                 keyOptimalText.textContent = `Optimal (${optCFSMin} CFS to ${optCFSMax} CFS)`;
                 keyFastUnsafeText.textContent = `Fast/Unsafe (${optCFSMax} CFS to 3000 CFS)`;
 
-                keyVerySlow.style.display = verySlowWidth > 0 ? 'inline-block' : 'none';
-                keySlow.style.display = slowWidth > 0 ? 'inline-block' : 'none';
-                keyOptimal.style.display = optimalWidth > 0 ? 'inline-block' : 'none';
-                keyFastUnsafe.style.display = fastUnsafeWidth > 0 ? 'inline-block' : 'none';
+                keyVerySlowText.parentElement.style.display = verySlowWidth > 0 ? 'flex' : 'none';
+                keySlowText.parentElement.style.display = slowWidth > 0 ? 'flex' : 'none';
+                keyOptimalText.parentElement.style.display = optimalWidth > 0 ? 'flex' : 'none';
+                keyFastUnsafeText.parentElement.style.display = fastUnsafeWidth > 0 ? 'flex' : 'none';
 
                 const pointerPosition = (flowRate / 3000) * 100;
                 pointer.style.left = `${pointerPosition}%`;
