@@ -56,7 +56,7 @@
         .gauge-container {
             position: relative;
             width: 100%;
-            height: 50px;
+            height: 60px;
             margin-top: 40px; /* Increased margin for more space */
         }
 
@@ -130,6 +130,7 @@
             color: white;
             font-weight: bold;
             font-size: 0.9em;
+            white-space: nowrap;
         }
 
         .console-toggle {
@@ -180,7 +181,7 @@
                 <div class="pointer" id="pointer"></div>
             </div>
         </div>
-        <div class="version">v2.4.1</div>
+        <div class="version">v2.5.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -315,8 +316,21 @@
                 optimalLabel.style.display = optimalWidth > 0 ? 'block' : 'none';
                 fastUnsafeLabel.style.display = fastUnsafeWidth > 0 ? 'block' : 'none';
 
+                // Adjust the font size based on the width of each section
+                adjustFontSize(verySlowLabel, verySlowWidth);
+                adjustFontSize(slowLabel, slowWidth);
+                adjustFontSize(optimalLabel, optimalWidth);
+                adjustFontSize(fastUnsafeLabel, fastUnsafeWidth);
+
                 const pointerPosition = (flowRate / 3000) * 100;
                 pointer.style.left = `${pointerPosition}%`;
+            }
+
+            function adjustFontSize(label, width) {
+                if (width > 0) {
+                    const fontSize = Math.max(10, width / 2.5); // Adjust the divisor to fit your needs
+                    label.style.fontSize = `${fontSize}px`;
+                }
             }
 
             vesselSegments.forEach(segment => {
