@@ -53,26 +53,6 @@
             color: lightgray;
         }
 
-        .vessel-select {
-            display: flex;
-            margin: 20px 0;
-        }
-
-        .segment {
-            flex: 1;
-            padding: 10px 0;
-            text-align: center;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            background: #e0f7fa;
-            transition: background 0.2s, border 0.2s;
-        }
-
-        .segment.selected {
-            background: #b2ebf2;
-            border: 1px solid #4682b4;
-        }
-
         .console-toggle {
             margin-top: 10px;
             cursor: pointer;
@@ -107,13 +87,7 @@
         <div id="gage-height" class="data">Loading...</div>
         <div id="precipitation" class="data">Loading...</div>
         <div id="last-update" class="data">Loading...</div>
-        <div class="vessel-select">
-            <div class="segment selected" id="vessel-tube" data-vessel="tube">Tube</div>
-            <div class="segment" id="vessel-paddleboard-shallow" data-vessel="paddleboard-shallow">Paddle board</div>
-            <div class="segment" id="vessel-paddleboard-river" data-vessel="paddleboard-river">Paddle board with river fin(s)</div>
-            <div class="segment" id="vessel-kayak" data-vessel="kayak">Kayak</div>
-        </div>
-        <div class="version">v3.0.0</div>
+        <div class="version">v3.0.1</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -126,7 +100,6 @@
             const gageHeightElement = document.getElementById('gage-height');
             const precipitationElement = document.getElementById('precipitation');
             const lastUpdateElement = document.getElementById('last-update');
-            const vesselSegments = document.querySelectorAll('.segment');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
 
@@ -187,14 +160,6 @@
                     lastUpdateElement.textContent = 'Error fetching data';
                 }
             }
-
-            vesselSegments.forEach(segment => {
-                segment.addEventListener('click', function() {
-                    vesselSegments.forEach(seg => seg.classList.remove('selected'));
-                    segment.classList.add('selected');
-                    logDebugMessage("Vessel selected: " + segment.getAttribute('data-vessel'));
-                });
-            });
 
             fetchWaterData();
         });
