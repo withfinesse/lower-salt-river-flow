@@ -63,6 +63,11 @@
             margin-top: 5px;
         }
 
+        .data-item i {
+            font-size: 2em;
+            color: #4682b4;
+        }
+
         .version {
             position: absolute;
             top: 10px;
@@ -91,7 +96,14 @@
             font-size: 0.9em;
             color: #333;
         }
+
+        .icon {
+            font-size: 2em;
+            color: #4682b4;
+        }
+
     </style>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="header">
@@ -101,18 +113,22 @@
         <h1>Current Conditions</h1>
         <div class="data-grid">
             <div class="data-item">
+                <i class="fas fa-tint icon"></i>
                 <strong>Flow Rate</strong>
                 <span id="flow-data">Loading...</span>
             </div>
             <div class="data-item">
+                <i class="fas fa-ruler-vertical icon"></i>
                 <strong>Gage Height</strong>
                 <span id="gage-height">Loading...</span>
             </div>
             <div class="data-item">
+                <i class="fas fa-cloud-rain icon"></i>
                 <strong>Precipitation</strong>
                 <span id="precipitation">Loading...</span>
             </div>
             <div class="data-item">
+                <i class="fas fa-clock icon"></i>
                 <strong>Last Update</strong>
                 <span id="last-update">Loading...</span>
             </div>
