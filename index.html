@@ -73,24 +73,6 @@
             border: 1px solid #4682b4;
         }
 
-        .key {
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        .key-item {
-            display: flex;
-            align-items: center;
-            margin: 5px 0;
-        }
-
-        .key-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border-radius: 3px;
-        }
-
         .console-toggle {
             margin-top: 10px;
             cursor: pointer;
@@ -113,22 +95,7 @@
             color: #333;
         }
 
-        .key-label {
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        .gauge-container {
-            margin-top: 20px;
-        }
-
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-gauge@1.0.0/dist/chartjs-gauge.min.js"></script>
-    <script>
-        // Register the gauge controller
-        Chart.register(GaugeController);
-    </script>
 </head>
 <body>
     <div class="header">
@@ -146,16 +113,7 @@
             <div class="segment" id="vessel-paddleboard-river" data-vessel="paddleboard-river">Paddle board with river fin(s)</div>
             <div class="segment" id="vessel-kayak" data-vessel="kayak">Kayak</div>
         </div>
-        <div class="gauge-container">
-            <canvas id="gaugeChart" width="400" height="200"></canvas>
-        </div>
-        <div class="key">
-            <div class="key-item"><div class="key-color" style="background: gray;"></div><span id="key-very-slow-text">Very Slow (0 CFS to 800 CFS)</span></div>
-            <div class="key-item"><div class="key-color" style="background: yellow;"></div><span id="key-slow-text">Slow (800 CFS to 800 CFS)</span></div>
-            <div class="key-item"><div class="key-color" style="background: green;"></div><span id="key-optimal-text">Optimal (800 CFS to 2000 CFS)</span></div>
-            <div class="key-item"><div class="key-color" style="background: red;"></div><span id="key-fast-unsafe-text">Fast/Unsafe (2000 CFS to 2500 CFS)</span></div>
-        </div>
-        <div class="version">v2.8.0</div>
+        <div class="version">v3.0.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
@@ -169,15 +127,8 @@
             const precipitationElement = document.getElementById('precipitation');
             const lastUpdateElement = document.getElementById('last-update');
             const vesselSegments = document.querySelectorAll('.segment');
-            const keyVerySlowText = document.getElementById('key-very-slow-text');
-            const keySlowText = document.getElementById('key-slow-text');
-            const keyOptimalText = document.getElementById('key-optimal-text');
-            const keyFastUnsafeText = document.getElementById('key-fast-unsafe-text');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
-            const ctx = document.getElementById('gaugeChart').getContext('2d');
-
-            let gaugeChart;
 
             function logDebugMessage(message) {
                 const logEntry = document.createElement('div');
@@ -228,8 +179,6 @@
                     gageHeightElement.textContent = `Current Gage Height: ${gageHeight} ft`;
                     precipitationElement.textContent = `Precipitation: ${precipitation} in`;
                     lastUpdateElement.textContent = `Last Update: ${lastUpdateTime.toLocaleString()}`;
-
-                    updateGauge(discharge, document.querySelector('.segment.selected').getAttribute('data-vessel'));
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
                     flowDataElement.textContent = 'Error fetching data';
@@ -239,95 +188,14 @@
                 }
             }
 
-            function createGaugeChart() {
-                gaugeChart = new Chart(ctx, {
-                    type: 'gauge',
-                    data: {
-                        datasets: [{
-                            value: 0,
-                            data: [0, 0, 0, 0],
-                            backgroundColor: ['gray', 'yellow', 'green', 'red']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        needle: {
-                            radiusPercentage: 2,
-                            widthPercentage: 3.2,
-                            lengthPercentage: 80,
-                            color: 'rgba(0, 0, 0, 1)'
-                        },
-                        valueLabel: {
-                            formatter: Math.round
-                        },
-                        plugins: {
-                            datalabels: {
-                                display: false
-                            }
-                        }
-                    }
-                });
-            }
-
-            function updateGauge(flowRate, vessel) {
-                logDebugMessage(`Updating gauge with flowRate: ${flowRate} and vessel: ${vessel}`);
-                let minCFS, optCFSMin, optCFSMax;
-                let showSlow = true;
-
-                const maxCFS = flowRate > 2500 ? flowRate : 2500;
-
-                switch (vessel) {
-                    case 'tube':
-                        minCFS = 800;
-                        optCFSMin = 800;
-                        optCFSMax = 2000;
-                        showSlow = false;
-                        break;
-                    case 'paddleboard-shallow':
-                        minCFS = 400;
-                        optCFSMin = 600;
-                        optCFSMax = 1200;
-                        break;
-                    case 'paddleboard-river':
-                        minCFS = 500;
-                        optCFSMin = 700;
-                        optCFSMax = 1200;
-                        break;
-                    case 'kayak':
-                        minCFS = 500;
-                        optCFSMin = 800;
-                        optCFSMax = 1500;
-                        break;
-                }
-
-                const data = [
-                    minCFS,
-                    showSlow ? optCFSMin - minCFS : 0,
-                    optCFSMax - optCFSMin,
-                    maxCFS - optCFSMax
-                ];
-
-                gaugeChart.data.datasets[0].data = data;
-                gaugeChart.data.datasets[0].value = flowRate;
-                gaugeChart.update();
-
-                keyVerySlowText.textContent = `Very Slow (0 CFS to ${minCFS} CFS)`;
-                keySlowText.textContent = showSlow ? `Slow (${minCFS} CFS to ${optCFSMin} CFS)` : 'Slow (0 CFS)';
-                keyOptimalText.textContent = `Optimal (${optCFSMin} CFS to ${optCFSMax} CFS)`;
-                keyFastUnsafeText.textContent = `Fast/Unsafe (${optCFSMax} CFS to ${maxCFS} CFS)`;
-            }
-
             vesselSegments.forEach(segment => {
                 segment.addEventListener('click', function() {
                     vesselSegments.forEach(seg => seg.classList.remove('selected'));
                     segment.classList.add('selected');
                     logDebugMessage("Vessel selected: " + segment.getAttribute('data-vessel'));
-                    const flowRate = parseFloat(flowDataElement.textContent.split(': ')[1]);
-                    updateGauge(flowRate, segment.getAttribute('data-vessel'));
                 });
             });
 
-            createGaugeChart();
             fetchWaterData();
         });
     </script>
