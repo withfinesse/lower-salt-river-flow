@@ -63,7 +63,7 @@
             margin-top: 5px;
         }
 
-        .data-item i {
+        .data-item .icon {
             font-size: 2em;
             color: #4682b4;
         }
@@ -97,13 +97,7 @@
             color: #333;
         }
 
-        .icon {
-            font-size: 2em;
-            color: #4682b4;
-        }
-
     </style>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="header">
@@ -113,27 +107,27 @@
         <h1>Current Conditions</h1>
         <div class="data-grid">
             <div class="data-item">
-                <i class="fas fa-tint icon"></i>
+                <div class="icon">💧</div>
                 <strong>Flow Rate</strong>
                 <span id="flow-data">Loading...</span>
             </div>
             <div class="data-item">
-                <i class="fas fa-ruler-vertical icon"></i>
+                <div class="icon">📏</div>
                 <strong>Gage Height</strong>
                 <span id="gage-height">Loading...</span>
             </div>
             <div class="data-item">
-                <i class="fas fa-cloud-rain icon"></i>
+                <div class="icon">🌧️</div>
                 <strong>Precipitation</strong>
                 <span id="precipitation">Loading...</span>
             </div>
             <div class="data-item">
-                <i class="fas fa-clock icon"></i>
+                <div class="icon">⏰</div>
                 <strong>Last Update</strong>
                 <span id="last-update">Loading...</span>
             </div>
         </div>
-        <div class="version">v3.0.2</div>
+        <div class="version">v3.0.3</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </div>
     <div class="debug" id="debug-log"></div>
