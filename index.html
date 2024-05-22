@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lower Salt River Conditions</title>
+    <meta name="description" content="Real-time data from USGS measured at Pebble Beach. Check current conditions for tubing, kayaking, and paddle boarding.">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -33,11 +34,6 @@
             margin: 20px 0;
             width: 90%;
             max-width: 600px;
-        }
-
-        h1, h2 {
-            margin-bottom: 20px;
-            color: #333;
         }
 
         .data-grid {
@@ -100,40 +96,40 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <header class="header">
         <h2>Lower Salt River Conditions</h2>
         <p>Real-time data from USGS measured at Pebble Beach</p>
-    </div>
-    <div class="container">
+    </header>
+    <main class="container">
         <div class="data-grid">
-            <div class="data-item">
-                <div class="icon">💧</div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Flow Rate Icon">💧</div>
                 <strong>Flow Rate</strong>
                 <span id="flow-data">Loading...</span>
             </div>
-            <div class="data-item">
-                <div class="icon">📏</div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Gage Height Icon">📏</div>
                 <strong>Gage Height</strong>
                 <span id="gage-height">Loading...</span>
             </div>
-            <div class="data-item">
-                <div class="icon">🌧️</div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Precipitation Icon">🌧️</div>
                 <strong>Precipitation</strong>
                 <span id="precipitation">Loading...</span>
             </div>
-            <div class="data-item">
-                <div class="icon">🕰️</div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Last Update Icon">🕰️</div>
                 <strong>Last Update</strong>
                 <span id="last-update">Loading...</span>
             </div>
         </div>
         <div class="version">v3.0.5</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
-    </div>
-    <div class="debug" id="debug-log"></div>
-    <div class="footer">
+    </main>
+    <footer class="footer">
         <p>&copy; 2024 Lower Salt River Monitoring</p>
-    </div>
+    </footer>
+    <div class="debug" id="debug-log"></div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const flowDataElement = document.getElementById('flow-data');
