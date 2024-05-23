@@ -1,18 +1,22 @@
 const chromium = require('chrome-aws-lambda');
 const puppeteer = require('puppeteer-core');
 
-exports.handler = async function (event, context) {
+exports.handler = async (event, context) => {
   let browser = null;
+
   try {
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath,
-      headless: chromium.headless
+      headless: chromium.headless,
     });
+
     const page = await browser.newPage();
-    await page.goto('https://www.fs.usda.gov/recmain/tonto/recreation', { waitUntil: 'networkidle2', timeout: 15000 });
-    
+    await page.goto('https://www.fs.usda.gov/recmain/tonto/recreation', {
+      waitUntil: 'networkidle2',
+    });
+
     const siteData = await page.evaluate(() => {
       const data = {};
       const sites = [
@@ -24,7 +28,7 @@ exports.handler = async function (event, context) {
         'Raccoon Bluff Day-Use Area',
         'Saguaro Lake Ranch',
         'Sheeps Crossing Day Use Area',
-        'Water Users Day Use Area'
+        'Water Users Day Use Area',
       ];
 
       document.querySelectorAll('.item-list').forEach((element) => {
@@ -35,22 +39,23 @@ exports.handler = async function (event, context) {
         if (sites.includes(name)) {
           data[name] = {
             status,
-            conditions
+            conditions,
           };
         }
       });
+
       return data;
     });
 
     return {
       statusCode: 200,
-      body: JSON.stringify(siteData)
+      body: JSON.stringify(siteData),
     };
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error('Error fetching data:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to scrape data', details: error.message })
+      body: JSON.stringify({ error: 'Failed to scrape data', details: error.message }),
     };
   } finally {
     if (browser) {
