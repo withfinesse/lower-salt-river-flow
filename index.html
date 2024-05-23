@@ -4,14 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lower Salt River Conditions</title>
-    <meta name="description" content="Real-time USGS data measured at Pebble Beach. Check current conditions for tubing, kayaking, and paddle boarding.">
-    <meta name="keywords" content="Lower Salt River, river conditions, USGS data, Pebble Beach, tubing, kayaking, paddle boarding">
-    <meta name="author" content="Lower Salt River Monitoring">
-    <meta property="og:title" content="Lower Salt River Conditions">
-    <meta property="og:description" content="Real-time USGS data measured at Pebble Beach. Check current conditions for tubing, kayaking, and paddle boarding.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://example.com/lower-salt-river-conditions">
-    <meta property="og:image" content="https://example.com/images/river.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -23,7 +15,6 @@
             flex-direction: column;
             align-items: center;
         }
-
         .header, .footer {
             background-color: #4682b4;
             color: white;
@@ -31,7 +22,6 @@
             text-align: center;
             width: 100%;
         }
-
         .container {
             background: white;
             padding: 20px;
@@ -42,42 +32,49 @@
             width: 90%;
             max-width: 600px;
         }
-
+        h1, h2 {
+            margin: 0;
+            padding: 5px 0;
+        }
+        h2 {
+            font-size: 1.2em;
+            color: #666;
+        }
         .data-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             margin-top: 20px;
         }
-
         .data-item {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 10px;
-            background: #f9f9f9;
         }
-
-        .data-item span {
-            font-size: 1.2em;
-            color: #333;
-            margin-top: 5px;
-        }
-
-        .data-item .icon {
+        .icon {
             font-size: 2em;
-            color: #4682b4;
+            margin-bottom: 10px;
         }
-
+        .site-data-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .site-data-item {
+            background: #e0f7fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
         .version {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: lightgray;
+            margin-top: 20px;
+            color: gray;
         }
-
         .console-toggle {
             margin-top: 10px;
             cursor: pointer;
@@ -85,7 +82,6 @@
             text-decoration: underline;
             font-size: 0.9em;
         }
-
         .debug {
             display: none;
             margin-top: 20px;
@@ -98,23 +94,6 @@
             border-radius: 10px;
             font-size: 0.9em;
             color: #333;
-        }
-
-        .site-data-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .site-data-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 10px;
-            background: #f9f9f9;
         }
     </style>
 </head>
@@ -178,6 +157,7 @@
                     toggleConsole.textContent = 'View Console';
                 }
             });
+
             async function fetchWaterData() {
                 logDebugMessage("Fetching water data...");
                 try {
@@ -247,105 +227,5 @@
             fetchSiteData();
         });
     </script>
-<!-- index.html Part 2 -->
-<div class="site-data-grid" id="site-data">
-    <!-- Site data will be inserted here -->
-</div>
-<div class="version">v3.0.8</div>
-<div class="console-toggle" id="toggle-console">View Console</div>
-</main>
-<footer class="footer">
-    <p>&copy; 2024 Lower Salt River Monitoring</p>
-</footer>
-<div class="debug" id="debug-log"></div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const siteDataElement = document.getElementById('site-data');
-    const debugLog = document.getElementById('debug-log');
-    const toggleConsole = document.getElementById('toggle-console');
-
-    function logDebugMessage(message) {
-        const logEntry = document.createElement('div');
-        logEntry.textContent = message;
-        debugLog.appendChild(logEntry);
-        console.log(message); // Also log to browser console for easier debugging
-    }
-
-    toggleConsole.addEventListener('click', function() {
-        if (debugLog.style.display === 'none') {
-            debugLog.style.display = 'block';
-            toggleConsole.textContent = 'Hide Console';
-        } else {
-            debugLog.style.display = 'none';
-            toggleConsole.textContent = 'View Console';
-        }
-    });
-
-    async function fetchWaterData() {
-        logDebugMessage("Fetching water data...");
-        try {
-            const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            logDebugMessage("Data fetched: " + JSON.stringify(data));
-
-            const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
-            const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
-            const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
-
-            if (!dischargeTimeSeries || !gageHeightTimeSeries || !precipitationTimeSeries) {
-                throw new Error("One or more required data series are missing in the response.");
-            }
-
-            const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
-            const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
-            const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
-            const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
-
-            logDebugMessage("Discharge: " + discharge);
-            logDebugMessage("Gage Height: " + gageHeight);
-            logDebugMessage("Precipitation: " + precipitation);
-            logDebugMessage("Last Update Time: " + lastUpdateTime);
-
-            document.getElementById('flow-data').textContent = `${discharge} cfs`;
-            document.getElementById('gage-height').textContent = `${gageHeight} ft`;
-            document.getElementById('precipitation').textContent = `${precipitation} in`;
-            document.getElementById('last-update').textContent = lastUpdateTime.toLocaleString();
-        } catch (error) {
-            logDebugMessage("Error fetching water data: " + error);
-            document.getElementById('flow-data').textContent = 'Error fetching data';
-            document.getElementById('gage-height').textContent = 'Error fetching data';
-            document.getElementById('precipitation').textContent = 'Error fetching data';
-            document.getElementById('last-update').textContent = 'Error fetching data';
-        }
-    }
-
-    async function fetchSiteData() {
-        logDebugMessage("Fetching site data...");
-        try {
-            const response = await fetch('/.netlify/functions/scrapeData');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            logDebugMessage("Site data fetched: " + JSON.stringify(data));
-
-            data.forEach(site => {
-                const siteItem = document.createElement('div');
-                siteItem.className = 'site-data-item';
-                siteItem.innerHTML = `<strong>${site.name}</strong><p>Status: ${site.status}</p><p>Conditions: ${site.conditions}</p>`;
-                siteDataElement.appendChild(siteItem);
-            });
-        } catch (error) {
-            logDebugMessage("Error fetching site data: " + error);
-        }
-    }
-
-    fetchWaterData();
-    fetchSiteData();
-    });
-</script>
 </body>
 </html>
