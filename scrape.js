@@ -19,6 +19,7 @@ async function scrapeData() {
     });
 
     fs.writeFileSync('siteData.json', JSON.stringify(sites, null, 2));
+    console.log('Data scraped successfully and saved to siteData.json');
   } catch (error) {
     console.error('Error scraping data:', error);
   }
