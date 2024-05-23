@@ -11,16 +11,14 @@ async function scrapeData() {
 
     let sites = {};
 
-    // Adjust selectors based on the actual HTML structure of the target site
-    $('.recreation-area-card').each((index, element) => {
-      const siteName = $(element).find('.recreation-area-card__title').text().trim();
-      const status = $(element).find('.recreation-area-card__status').text().trim();
-      const conditions = $(element).find('.recreation-area-card__conditions').text().trim();
+    $('.rec-area-card').each((index, element) => {
+      const siteName = $(element).find('.rec-area-name').text().trim();
+      const status = $(element).find('.rec-area-status').text().trim();
+      const conditions = $(element).find('.rec-area-conditions').text().trim();
       sites[siteName] = { status, conditions };
     });
 
     fs.writeFileSync('siteData.json', JSON.stringify(sites, null, 2));
-    console.log('Data scraped successfully');
   } catch (error) {
     console.error('Error scraping data:', error);
   }
