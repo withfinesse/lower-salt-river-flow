@@ -1,10 +1,6 @@
 {
   "name": "lower-salt-river-flow",
   "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "echo 'No build script defined.'"
-  },
   "dependencies": {
     "axios": "^0.24.0",
     "cheerio": "^1.0.0-rc.10"
