@@ -1,41 +1,30 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-exports.handler = async function(event, context) {
+exports.handler = async function (event, context) {
     try {
-        const response = await axios.get('https://www.fs.usda.gov/recmain/tonto/recreation');
+        const url = 'https://www.fs.usda.gov/recmain/tonto/recreation';
+        const response = await axios.get(url);
         const html = response.data;
         const $ = cheerio.load(html);
 
-        const sites = [
-            "Blue Point Day Use Area",
-            "Goldfield Day Use Area",
-            "Granite Reef Day Use Area",
-            "Pebble Beach Day Use Area",
-            "Phon D Sutton Day Use Area",
-            "Raccoon Bluff Day-Use Area",
-            "Saguaro Lake Ranch",
-            "Sheeps Crossing Day Use Area",
-            "Water Users Day Use Area"
-        ];
+        const siteData = [];
 
-        const siteData = {};
-
-        sites.forEach(site => {
-            const siteElement = $(`.rec-area-name:contains(${site})`).closest('.rec-area-item');
-            const status = siteElement.find('.rec-status').text().trim();
-            const conditions = siteElement.find('.rec-condition').text().trim();
-            siteData[site] = { status, conditions };
+        $('div.recreation-area').each((i, elem) => {
+            const name = $(elem).find('h2').text();
+            const status = $(elem).find('.status').text();
+            const conditions = $(elem).find('.conditions').text();
+            siteData.push({ name, status, conditions });
         });
 
         return {
             statusCode: 200,
-            body: JSON.stringify(siteData)
+            body: JSON.stringify(siteData),
         };
     } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ error: error.message }),
         };
     }
 };
