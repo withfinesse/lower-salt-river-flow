@@ -1,43 +1,46 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-const SITE_URL = 'https://www.fs.usda.gov/recmain/tonto/recreation';
+exports.handler = async function (event, context) {
+    try {
+        const url = 'https://www.fs.usda.gov/recmain/tonto/recreation';
+        const response = await axios.get(url, { timeout: 10000 }); // Adding a timeout to the axios request
+        const html = response.data;
+        const $ = cheerio.load(html);
 
-exports.handler = async function(event, context) {
-  try {
-    const response = await axios.get(SITE_URL);
-    const $ = cheerio.load(response.data);
+        const sites = [
+            "Blue Point Day Use Area",
+            "Goldfield Day Use Area",
+            "Granite Reef Day Use Area",
+            "Pebble Beach Day Use Area",
+            "Phon D Sutton Day Use Area",
+            "Raccoon Bluff Day-Use Area",
+            "Saguaro Lake Ranch",
+            "Sheeps Crossing Day Use Area",
+            "Water Users Day Use Area"
+        ];
 
-    const siteData = {};
-    const sites = [
-      'Blue Point Day Use Area',
-      'Goldfield Day Use Area',
-      'Granite Reef Day Use Area',
-      'Pebble Beach Day Use Area',
-      'Phon D Sutton Day Use Area',
-      'Raccoon Bluff Day-Use Area',
-      'Saguaro Lake Ranch',
-      'Sheeps Crossing Day Use Area',
-      'Water Users Day Use Area'
-    ];
+        const siteData = {};
 
-    sites.forEach(site => {
-      const siteElement = $(`.entry-title:contains(${site})`).parent();
-      const status = siteElement.find('.status').text().trim();
-      const conditions = siteElement.find('.conditions').text().trim();
+        sites.forEach(site => {
+            const siteElement = $(`h3:contains(${site})`).parent();
+            const status = siteElement.find('.status').text().trim();
+            const conditions = siteElement.find('.conditions').text().trim();
 
-      siteData[site] = { status, conditions };
-    });
+            siteData[site] = {
+                status,
+                conditions
+            };
+        });
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(siteData)
-    };
-  } catch (error) {
-    console.error('Error fetching site data:', error);
-    return {
-      statusCode: 500,
-      body: 'Error fetching site data'
-    };
-  }
+        return {
+            statusCode: 200,
+            body: JSON.stringify(siteData)
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: error.message })
+        };
+    }
 };
