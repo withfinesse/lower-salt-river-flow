@@ -247,5 +247,108 @@
             fetchSiteData();
         });
     </script>
+<!-- index.html Part 2 -->
+<div class="site-data-grid" id="site-data">
+    <!-- Site data will be inserted here -->
+</div>
+<div class="version">v3.0.8</div>
+<div class="console-toggle" id="toggle-console">View Console</div>
+</main>
+<footer class="footer">
+    <p>&copy; 2024 Lower Salt River Monitoring</p>
+</footer>
+<div class="debug" id="debug-log"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const siteDataElement = document.getElementById('site-data');
+        const debugLog = document.getElementById('debug-log');
+        const toggleConsole = document.getElementById('toggle-console');
+
+        function logDebugMessage(message) {
+            const logEntry = document.createElement('div');
+            logEntry.textContent = message;
+            debugLog.appendChild(logEntry);
+            console.log(message); // Also log to browser console for easier debugging
+        }
+
+        toggleConsole.addEventListener('click', function() {
+            if (debugLog.style.display === 'none') {
+                debugLog.style.display = 'block';
+                toggleConsole.textContent = 'Hide Console';
+            } else {
+                debugLog.style.display = 'none';
+                toggleConsole.textContent = 'View Console';
+            }
+        });
+
+        async function fetchWaterData() {
+            logDebugMessage("Fetching water data...");
+            try {
+                const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                logDebugMessage("Data fetched: " + JSON.stringify(data));
+
+                const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
+                const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
+                const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
+
+                if (!dischargeTimeSeries || !gageHeightTimeSeries || !precipitationTimeSeries) {
+                    throw new Error("One or more required data series are missing in the response.");
+                }
+
+                const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
+                const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
+                const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
+                const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
+
+                logDebugMessage("Discharge: " + discharge);
+                logDebugMessage("Gage Height: " + gageHeight);
+                logDebugMessage("Precipitation: " + precipitation);
+                logDebugMessage("Last Update Time: " + lastUpdateTime);
+
+                document.getElementById('flow-data').textContent = `${discharge} cfs`;
+                document.getElementById('gage-height').textContent = `${gageHeight} ft`;
+                document.getElementById('precipitation').textContent = `${precipitation} in`;
+                document.getElementById('last-update').textContent = lastUpdateTime.toLocaleString();
+            } catch (error) {
+                logDebugMessage("Error fetching data: " + error);
+                document.getElementById('flow-data').textContent = 'Error fetching data';
+                document.getElementById('gage-height').textContent = 'Error fetching data';
+                document.getElementById('precipitation').textContent = 'Error fetching data';
+                document.getElementById('last-update').textContent = 'Error fetching data';
+            }
+        }
+
+        async function fetchSiteData() {
+            logDebugMessage("Fetching site data...");
+            try {
+                const response = await fetch('/.netlify/functions/scrapeData');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const siteData = await response.json();
+                logDebugMessage("Site data fetched: " + JSON.stringify(siteData));
+
+                Object.keys(siteData).forEach(site => {
+                    const siteInfo = siteData[site];
+                    const siteItem = document.createElement('div');
+                    siteItem.classList.add('site-data-item');
+                    siteItem.innerHTML = `<strong>${site}</strong>
+                                         <span>Status: ${siteInfo.status}</span>
+                                         <span>Conditions: ${siteInfo.conditions}</span>`;
+                    siteDataElement.appendChild(siteItem);
+                });
+            } catch (error) {
+                logDebugMessage("Error fetching site data: " + error);
+            }
+        }
+
+        fetchWaterData();
+        fetchSiteData();
+    });
+</script>
 </body>
 </html>
