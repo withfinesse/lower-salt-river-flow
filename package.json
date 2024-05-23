@@ -5,5 +5,9 @@
     "axios": "^0.24.0",
     "cheerio": "^1.0.0-rc.10",
     "puppeteer": "^10.0.0"
+  },
+  "scripts": {
+    "build": "echo 'No build necessary for this project'",
+    "start": "netlify dev"
   }
 }
