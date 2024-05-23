@@ -8,9 +8,10 @@ exports.handler = async function (event, context) {
       body: response.data
     };
   } catch (error) {
+    console.error("Error fetching data:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to scrape data' })
+      body: JSON.stringify({ error: 'Failed to scrape data', details: error.message })
     };
   }
 };
