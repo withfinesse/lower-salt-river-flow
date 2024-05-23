@@ -1,10 +1,14 @@
-const puppeteer = require('puppeteer');
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 
 exports.handler = async function (event, context) {
   let browser = null;
   try {
     browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless
     });
     const page = await browser.newPage();
     await page.goto('https://www.fs.usda.gov/recmain/tonto/recreation', { waitUntil: 'networkidle2', timeout: 15000 });
