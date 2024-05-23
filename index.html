@@ -100,6 +100,22 @@
             color: #333;
         }
 
+        .site-data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .site-data-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -130,7 +146,10 @@
                 <span id="last-update">Loading...</span>
             </div>
         </div>
-        <div class="version">v3.0.7</div>
+        <div class="site-data-grid" id="site-data">
+            <!-- Site data will be inserted here -->
+        </div>
+        <div class="version">v3.0.8</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </main>
     <footer class="footer">
@@ -139,10 +158,7 @@
     <div class="debug" id="debug-log"></div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const flowDataElement = document.getElementById('flow-data');
-            const gageHeightElement = document.getElementById('gage-height');
-            const precipitationElement = document.getElementById('precipitation');
-            const lastUpdateElement = document.getElementById('last-update');
+            const siteDataElement = document.getElementById('site-data');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
 
@@ -162,11 +178,10 @@
                     toggleConsole.textContent = 'View Console';
                 }
             });
-
             async function fetchWaterData() {
                 logDebugMessage("Fetching water data...");
                 try {
-                    const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000&parameterCd=00060,00065,00045');
+                    const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -191,20 +206,45 @@
                     logDebugMessage("Precipitation: " + precipitation);
                     logDebugMessage("Last Update Time: " + lastUpdateTime);
 
-                    flowDataElement.textContent = `${discharge} cfs`;
-                    gageHeightElement.textContent = `${gageHeight} ft`;
-                    precipitationElement.textContent = `${precipitation} in`;
-                    lastUpdateElement.textContent = lastUpdateTime.toLocaleString();
+                    document.getElementById('flow-data').textContent = `${discharge} cfs`;
+                    document.getElementById('gage-height').textContent = `${gageHeight} ft`;
+                    document.getElementById('precipitation').textContent = `${precipitation} in`;
+                    document.getElementById('last-update').textContent = lastUpdateTime.toLocaleString();
                 } catch (error) {
                     logDebugMessage("Error fetching data: " + error);
-                    flowDataElement.textContent = 'Error';
-                    gageHeightElement.textContent = 'Error';
-                    precipitationElement.textContent = 'Error';
-                    lastUpdateElement.textContent = 'Error';
+                    document.getElementById('flow-data').textContent = 'Error fetching data';
+                    document.getElementById('gage-height').textContent = 'Error fetching data';
+                    document.getElementById('precipitation').textContent = 'Error fetching data';
+                    document.getElementById('last-update').textContent = 'Error fetching data';
+                }
+            }
+
+            async function fetchSiteData() {
+                logDebugMessage("Fetching site data...");
+                try {
+                    const response = await fetch('/.netlify/functions/scrapeData');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const siteData = await response.json();
+                    logDebugMessage("Site data fetched: " + JSON.stringify(siteData));
+
+                    Object.keys(siteData).forEach(site => {
+                        const siteInfo = siteData[site];
+                        const siteItem = document.createElement('div');
+                        siteItem.classList.add('site-data-item');
+                        siteItem.innerHTML = `<strong>${site}</strong>
+                                             <span>Status: ${siteInfo.status}</span>
+                                             <span>Conditions: ${siteInfo.conditions}</span>`;
+                        siteDataElement.appendChild(siteItem);
+                    });
+                } catch (error) {
+                    logDebugMessage("Error fetching site data: " + error);
                 }
             }
 
             fetchWaterData();
+            fetchSiteData();
         });
     </script>
 </body>
