@@ -2,7 +2,7 @@ const axios = require('axios');
 
 exports.handler = async function (event, context) {
   try {
-    const response = await axios.get('https://www.fs.usda.gov/recmain/tonto/recreation', { timeout: 5000 });
+    const response = await axios.get('https://www.fs.usda.gov/recmain/tonto/recreation', { timeout: 15000 });
     return {
       statusCode: 200,
       body: response.data
