@@ -7,7 +7,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["axios", "cheerio"]
+  external_node_modules = ["axios", "cheerio", "puppeteer"]
 
 [functions.scrapeData]
   timeout = 30
