@@ -106,9 +106,6 @@
                 <span id="last-update">Loading...</span>
             </div>
         </div>
-        <div class="site-data-grid" id="site-data">
-            <!-- Site data will be inserted here -->
-        </div>
         <div class="version">v3.0.8</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
     </main>
@@ -118,7 +115,6 @@
     <div class="debug" id="debug-log"></div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const siteDataElement = document.getElementById('site-data');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
 
@@ -180,34 +176,8 @@
                 }
             }
 
-            async function fetchSiteData() {
-                logDebugMessage("Fetching site data...");
-                try {
-                    const response = await fetch('siteData.json');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const siteData = await response.json();
-                    logDebugMessage("Site data fetched: " + JSON.stringify(siteData));
-
-                    Object.keys(siteData).forEach(site => {
-                        const siteInfo = siteData[site];
-                        const siteItem = document.createElement('div');
-                        siteItem.classList.add('site-data-item');
-                        siteItem.innerHTML = `<strong>${site}</strong>
-                                             <span>Status: ${siteInfo.status}</span>
-                                             <span>Conditions: ${siteInfo.conditions}</span>`;
-                        siteDataElement.appendChild(siteItem);
-                    });
-                } catch (error) {
-                    logDebugMessage("Error fetching site data: " + error);
-                }
-            }
-
             fetchWaterData();
-            fetchSiteData();
         });
     </script>
-    <script src="scrape.js"></script>
 </body>
 </html>
