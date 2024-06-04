@@ -171,15 +171,15 @@
         const debugLog = document.getElementById('debug-log');
         const toggleConsole = document.getElementById('toggle-console');
         const toggleWeather = document.getElementById('toggle-weather');
-        const weatherItems = document.querySelectorAll('.weather-item.hidden');
-
+        const additionalWeather = document.getElementById('additional-weather');
+    
         function logDebugMessage(message) {
             const logEntry = document.createElement('div');
             logEntry.textContent = message;
             debugLog.appendChild(logEntry);
             console.log(message); // Also log to browser console for easier debugging
         }
-
+    
         toggleConsole.addEventListener('click', function() {
             if (debugLog.style.display === 'none') {
                 debugLog.style.display = 'block';
@@ -189,12 +189,12 @@
                 toggleConsole.textContent = 'View Console';
             }
         });
-
+    
         toggleWeather.addEventListener('click', function() {
-            weatherItems.forEach(item => item.classList.toggle('hidden'));
+            additionalWeather.classList.toggle('hidden');
             toggleWeather.textContent = toggleWeather.textContent === 'More weather...' ? 'Less weather...' : 'More weather...';
         });
-
+    
         async function fetchWaterData() {
             logDebugMessage("Fetching water data...");
             try {
@@ -204,25 +204,25 @@
                 }
                 const data = await response.json();
                 logDebugMessage("Data fetched: " + JSON.stringify(data));
-
+    
                 const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
                 const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
                 const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
-
+    
                 if (!dischargeTimeSeries || !gageHeightTimeSeries || !precipitationTimeSeries) {
                     throw new Error("One or more required data series are missing in the response.");
                 }
-
+    
                 const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
                 const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
                 const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
                 const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
-
+    
                 logDebugMessage("Discharge: " + discharge);
                 logDebugMessage("Gage Height: " + gageHeight);
                 logDebugMessage("Precipitation: " + precipitation);
                 logDebugMessage("Last Update Time: " + lastUpdateTime);
-
+    
                 document.getElementById('flow-data').textContent = `${discharge} cfs`;
                 document.getElementById('gage-height').textContent = `${gageHeight} ft`;
                 document.getElementById('precipitation').textContent = `${precipitation} in`;
@@ -235,7 +235,7 @@
                 document.getElementById('last-update').textContent = 'Error fetching data';
             }
         }
-
+    
         async function fetchWeatherData() {
             logDebugMessage("Fetching weather data...");
             try {
@@ -245,9 +245,9 @@
                 }
                 const weatherData = await response.json();
                 logDebugMessage("Weather data fetched: " + JSON.stringify(weatherData));
-
+    
                 const periods = weatherData.properties.periods;
-
+    
                 if (!periods || periods.length === 0) {
                     throw new Error("No weather periods found in the response.");
                 }
@@ -268,10 +268,11 @@
                 document.getElementById('weather-day-after-next-text').textContent = 'Error fetching weather data';
             }
         }
-
+    
         fetchWaterData();
         fetchWeatherData();
-    });
+});
 </script>
 </body>
 </html>
+
