@@ -159,9 +159,10 @@
         <div class="version">v4.0.0</div>
     </main>
     <section class="update-section">
-        <p>Flow/Gage/Precipitation updated: <span id="usgs-update-time">Loading...</span></p>
-        <p>Temperature/Wind Speed & Direction updated: <span id="observation-update-time">Loading...</span></p>
-        <p>Weather forecasts updated: <span id="weather-update-time">Loading...</span></p>
+        <h2>Data Freshness</h2>
+        <p>Flow/Gage Height/Precipitation (USGS): <span id="usgs-update-time">Loading...</span></p>
+        <p>Temperature/Wind (weather.gov): <span id="observation-update-time">Loading...</span></p>
+        <p>Weather Forecast (weather.gov): <span id="weather-update-time">Loading...</span></p>
     </section>
     <footer class="footer">
         <p>Lower Salt River Conditions</p>
@@ -200,6 +201,16 @@
             toggleWeather.textContent = toggleWeather.textContent === 'More weather...' ? 'Less weather...' : 'More weather...';
         });
 
+        function formatDateWithoutSeconds(date) {
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
         async function fetchWaterData() {
             logDebugMessage("Fetching water data...");
             try {
@@ -231,7 +242,7 @@
                 document.getElementById('flow-data').textContent = `${discharge} cfs`;
                 document.getElementById('gage-height').textContent = `${gageHeight} ft`;
                 document.getElementById('precipitation').textContent = `${precipitation} in`;
-                document.getElementById('usgs-update-time').textContent = lastUpdateTime.toLocaleString();
+                document.getElementById('usgs-update-time').textContent = formatDateWithoutSeconds(lastUpdateTime);
             } catch (error) {
                 logDebugMessage("Error fetching data: " + error);
                 document.getElementById('flow-data').textContent = 'Error fetching data';
@@ -271,7 +282,7 @@
                 document.getElementById('weather-next-night-text').innerHTML = `${periods[3].detailedForecast}`;
                 document.getElementById('weather-day-after-next-title').textContent = periods[4].name;
                 document.getElementById('weather-day-after-next-text').innerHTML = `${periods[4].detailedForecast}`;
-                document.getElementById('weather-update-time').textContent = updateTime.toLocaleString();
+                document.getElementById('weather-update-time').textContent = formatDateWithoutSeconds(updateTime);
             } catch (error) {
                 logDebugMessage("Error fetching weather data: " + error);
                 document.getElementById('weather-today-text').textContent = 'Error fetching weather data';
@@ -307,7 +318,7 @@
                 document.getElementById('temperature').textContent = `${temperatureF.toFixed(2)} °F`;
                 document.getElementById('wind-direction').textContent = degreesToCompass(windDirection);
                 document.getElementById('wind-speed').textContent = `${windSpeed.toFixed(2)} mph`;
-                document.getElementById('observation-update-time').textContent = observationTime.toLocaleString();
+                document.getElementById('observation-update-time').textContent = formatDateWithoutSeconds(observationTime);
             } catch (error) {
                 logDebugMessage("Error fetching observation data: " + error);
                 document.getElementById('temperature').textContent = 'Error fetching data';
