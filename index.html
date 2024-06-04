@@ -108,6 +108,23 @@
                 <strong>Last Update</strong>
                 <span id="last-update">Loading...</span>
             </div>
+            <!-- New Data Items -->
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Temperature Icon">🌡️</div>
+                <strong>Temperature</strong>
+                <span id="temperature">Loading...</span>
+            </div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Wind Direction Icon">🧭</div>
+                <strong>Wind Direction</strong>
+                <span id="wind-direction">Loading...</span>
+            </div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Wind Speed Icon">💨</div>
+                <strong>Wind Speed</strong>
+                <span id="wind-speed">Loading...</span>
+            </div>
+            <!-- Existing Weather Data Items -->
             <div class="data-item" role="contentinfo">
                 <div class="icon">⛅</div>
                 <strong>Weather Today</strong><br>
@@ -248,8 +265,39 @@
         }
     }
 
+    async function fetchObservationData() {
+        logDebugMessage("Fetching observation data...");
+        try {
+            const response = await fetch('https://api.weather.gov/stations/TTBA3/observations/latest');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            logDebugMessage("Observation data fetched: " + JSON.stringify(data));
+
+            const temperatureC = data.properties.temperature.value;
+            const temperatureF = (temperatureC * 9/5) + 32;
+            const windDirection = data.properties.windDirection.value;
+            const windSpeed = data.properties.windSpeed.value * 0.621371; // convert km/h to mph
+
+            logDebugMessage("Temperature (F): " + temperatureF);
+            logDebugMessage("Wind Direction: " + windDirection);
+            logDebugMessage("Wind Speed (mph): " + windSpeed);
+
+            document.getElementById('temperature').textContent = `${temperatureF.toFixed(2)} °F`;
+            document.getElementById('wind-direction').textContent = `${windDirection}°`;
+            document.getElementById('wind-speed').textContent = `${windSpeed.toFixed(2)} mph`;
+        } catch (error) {
+            logDebugMessage("Error fetching observation data: " + error);
+            document.getElementById('temperature').textContent = 'Error fetching data';
+            document.getElementById('wind-direction').textContent = 'Error fetching data';
+            document.getElementById('wind-speed').textContent = 'Error fetching data';
+        }
+    }
+
     fetchWaterData();
     fetchWeatherData();
+    fetchObservationData();
 });
 
 </script>
