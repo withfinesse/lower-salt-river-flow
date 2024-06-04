@@ -251,18 +251,18 @@
                 if (!periods || periods.length === 0) {
                     throw new Error("No weather periods found in the response.");
                 }
-                document.getElementById('weather-today').innerHTML = `<strong>Today's Weather</strong><br>${periods[0].detailedForecast}`;
-                document.getElementById('weather-tonight').innerHTML = `<strong>Tonight's Weather</strong><br>${periods[1].detailedForecast}`;
-                document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].detailedForecast}`;
-                document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].detailedForecast}`;
-                document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].detailedForecast}`;
+                document.getElementById('weather-today-text').innerHTML = `<strong>Today's Weather</strong><br>${periods[0].detailedForecast}`;
+                document.getElementById('weather-tonight-text').innerHTML = `<strong>Tonight's Weather</strong><br>${periods[1].detailedForecast}`;
+                document.getElementById('weather-next-day-text').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].detailedForecast}`;
+                document.getElementById('weather-next-night-text').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].detailedForecast}`;
+                document.getElementById('weather-day-after-next-text').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].detailedForecast}`;
             } catch (error) {
                 logDebugMessage("Error fetching weather data: " + error);
-                document.getElementById('weather-today').textContent = 'Error fetching weather data';
-                document.getElementById('weather-tonight').textContent = 'Error fetching weather data';
-                document.getElementById('weather-next-day').textContent = 'Error fetching weather data';
-                document.getElementById('weather-next-night').textContent = 'Error fetching weather data';
-                document.getElementById('weather-day-after-next').textContent = 'Error fetching weather data';
+                document.getElementById('weather-today-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-tonight-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-next-day-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-next-night-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-day-after-next-text').textContent = 'Error fetching weather data';
             }
         }
 
