@@ -137,7 +137,6 @@
     <div class="debug" id="debug-log"></div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const siteDataElement = document.getElementById('site-data');
         const debugLog = document.getElementById('debug-log');
         const toggleConsole = document.getElementById('toggle-console');
 
@@ -215,11 +214,11 @@
                     throw new Error("No weather periods found in the response.");
                 }
 
-                document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].temperature}°${periods[0].temperatureUnit}<br>${periods[0].detailedForecast}`;
-                document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].temperature}°${periods[1].temperatureUnit}<br>${periods[1].detailedForecast}`;
-                document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].temperature}°${periods[2].temperatureUnit}<br>${periods[2].detailedForecast}`;
-                document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].temperature}°${periods[3].temperatureUnit}<br>${periods[3].detailedForecast}`;
-                document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].temperature}°${periods[4].temperatureUnit}<br>${periods[4].detailedForecast}`;
+                document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].detailedForecast}`;
+                document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].detailedForecast}`;
+                document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].detailedForecast}`;
+                document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].detailedForecast}`;
+                document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].detailedForecast}`;
             } catch (error) {
                 logDebugMessage("Error fetching weather data: " + error);
                 document.getElementById('weather-today').textContent = 'Error fetching weather data';
@@ -234,6 +233,5 @@
         fetchWeatherData();
     });
 </script>
-
 </body>
 </html>
