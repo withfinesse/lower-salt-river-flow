@@ -85,6 +85,9 @@
             margin-bottom: 20px;
         }
         .weather-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 10px;
@@ -122,11 +125,13 @@
         </div>
         <div class="weather-forecast" id="weather-forecast">
             <h3>Weather Forecast</h3>
-            <div class="weather-item" id="weather-today">Loading...</div>
-            <div class="weather-item" id="weather-tonight">Loading...</div>
-            <div class="weather-item" id="weather-next-day">Loading...</div>
-            <div class="weather-item" id="weather-next-night">Loading...</div>
-            <div class="weather-item" id="weather-day-after-next">Loading...</div>
+            <div class="data-grid">
+                <div class="weather-item" id="weather-today">Loading...</div>
+                <div class="weather-item" id="weather-tonight">Loading...</div>
+                <div class="weather-item" id="weather-next-day">Loading...</div>
+                <div class="weather-item" id="weather-next-night">Loading...</div>
+                <div class="weather-item" id="weather-day-after-next">Loading...</div>
+            </div>
         </div>
         <div class="version">v3.1.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
@@ -213,7 +218,6 @@
                 if (!periods || periods.length === 0) {
                     throw new Error("No weather periods found in the response.");
                 }
-
                 document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].detailedForecast}`;
                 document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].detailedForecast}`;
                 document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].detailedForecast}`;
