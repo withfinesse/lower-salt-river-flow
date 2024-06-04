@@ -201,7 +201,7 @@
         async function fetchWeatherData() {
             logDebugMessage("Fetching weather data...");
             try {
-                const response = await fetch('https://api.weather.gov/zones/forecast/AZZ547');
+                const response = await fetch('https://api.weather.gov/zones/forecast/AZZ547/forecast');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
