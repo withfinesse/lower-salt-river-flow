@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salt River Weather and Water Conditions</title>
+    <title>Weather and Water Conditions</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,7 +51,6 @@
 <body>
     <button id="toggle-console">View Console</button>
     <div id="debug-log"></div>
-
     <div class="container">
         <div class="card">
             <h2>Flow Rate</h2>
@@ -72,24 +71,28 @@
     </div>
 
     <h2>Weather Forecast</h2>
-    <div class="container">
-        <div class="card" id="weather-today">
-            Loading...
+    <div class="container" id="weather-container">
+        <div class="card">
+            <h2 id="weather-today-title">Loading...</h2>
+            <p id="weather-today">Loading...</p>
         </div>
-        <div class="card" id="weather-tonight">
-            Loading...
+        <div class="card">
+            <h2 id="weather-tonight-title">Loading...</h2>
+            <p id="weather-tonight">Loading...</p>
         </div>
-        <div class="card" id="weather-next-day">
-            Loading...
+        <div class="card">
+            <h2 id="weather-next-day-title">Loading...</h2>
+            <p id="weather-next-day">Loading...</p>
         </div>
-        <div class="card" id="weather-next-night">
-            Loading...
+        <div class="card">
+            <h2 id="weather-next-night-title">Loading...</h2>
+            <p id="weather-next-night">Loading...</p>
         </div>
-        <div class="card" id="weather-day-after-next">
-            Loading...
+        <div class="card">
+            <h2 id="weather-day-after-next-title">Loading...</h2>
+            <p id="weather-day-after-next">Loading...</p>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const debugLog = document.getElementById('debug-log');
@@ -121,7 +124,6 @@
                     }
                     const data = await response.json();
                     logDebugMessage("Data fetched: " + JSON.stringify(data));
-
                     const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
                     const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
                     const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
@@ -169,17 +171,27 @@
                         throw new Error("No weather periods found in the response.");
                     }
 
-                    document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].detailedForecast}`;
-                    document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].detailedForecast}`;
-                    document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].detailedForecast}`;
-                    document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].detailedForecast}`;
-                    document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].detailedForecast}`;
+                    document.getElementById('weather-today-title').textContent = periods[0].name;
+                    document.getElementById('weather-today').textContent = periods[0].detailedForecast;
+                    document.getElementById('weather-tonight-title').textContent = periods[1].name;
+                    document.getElementById('weather-tonight').textContent = periods[1].detailedForecast;
+                    document.getElementById('weather-next-day-title').textContent = periods[2].name;
+                    document.getElementById('weather-next-day').textContent = periods[2].detailedForecast;
+                    document.getElementById('weather-next-night-title').textContent = periods[3].name;
+                    document.getElementById('weather-next-night').textContent = periods[3].detailedForecast;
+                    document.getElementById('weather-day-after-next-title').textContent = periods[4].name;
+                    document.getElementById('weather-day-after-next').textContent = periods[4].detailedForecast;
                 } catch (error) {
                     logDebugMessage("Error fetching weather data: " + error);
+                    document.getElementById('weather-today-title').textContent = 'Error';
                     document.getElementById('weather-today').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-tonight-title').textContent = 'Error';
                     document.getElementById('weather-tonight').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-next-day-title').textContent = 'Error';
                     document.getElementById('weather-next-day').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-next-night-title').textContent = 'Error';
                     document.getElementById('weather-next-night').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-day-after-next-title').textContent = 'Error';
                     document.getElementById('weather-day-after-next').textContent = 'Error fetching weather data';
                 }
             }
