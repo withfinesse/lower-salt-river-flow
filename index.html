@@ -76,22 +76,19 @@
             font-size: 0.9em;
             color: #333;
         }
-        .weather-section {
-            margin-top: 20px;
+        .weather-forecast {
+            margin: 20px 0;
+            text-align: left;
         }
-        .weather-grid {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 20px;
+        .weather-forecast h3 {
+            text-align: center;
             margin-bottom: 20px;
         }
         .weather-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 10px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -123,11 +120,13 @@
                 <span id="last-update">Loading...</span>
             </div>
         </div>
-        <div class="weather-section">
+        <div class="weather-forecast" id="weather-forecast">
             <h3>Weather Forecast</h3>
-            <div class="weather-grid" id="weather-forecast">
-                <!-- Weather data will be inserted here -->
-            </div>
+            <div class="weather-item" id="weather-today">Loading...</div>
+            <div class="weather-item" id="weather-tonight">Loading...</div>
+            <div class="weather-item" id="weather-next-day">Loading...</div>
+            <div class="weather-item" id="weather-next-night">Loading...</div>
+            <div class="weather-item" id="weather-day-after-next">Loading...</div>
         </div>
         <div class="version">v3.1.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
@@ -138,6 +137,8 @@
     <div class="debug" id="debug-log"></div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const siteDataElement = document.getElementById('site-data');
+            const weatherForecastElement = document.getElementById('weather-forecast');
             const debugLog = document.getElementById('debug-log');
             const toggleConsole = document.getElementById('toggle-console');
 
@@ -157,6 +158,7 @@
                     toggleConsole.textContent = 'View Console';
                 }
             });
+
             async function fetchWaterData() {
                 logDebugMessage("Fetching water data...");
                 try {
@@ -190,13 +192,14 @@
                     document.getElementById('precipitation').textContent = `${precipitation} in`;
                     document.getElementById('last-update').textContent = lastUpdateTime.toLocaleString();
                 } catch (error) {
-                    logDebugMessage("Error fetching data: " + error);
+                    logDebugMessage("Error fetching water data: " + error);
                     document.getElementById('flow-data').textContent = 'Error fetching data';
                     document.getElementById('gage-height').textContent = 'Error fetching data';
                     document.getElementById('precipitation').textContent = 'Error fetching data';
                     document.getElementById('last-update').textContent = 'Error fetching data';
                 }
             }
+
             async function fetchWeatherData() {
                 logDebugMessage("Fetching weather data...");
                 try {
@@ -208,17 +211,18 @@
                     logDebugMessage("Weather data fetched: " + JSON.stringify(weatherData));
 
                     const periods = weatherData.properties.periods;
-                    const weatherForecast = document.getElementById('weather-forecast');
-                    periods.forEach(period => {
-                        const weatherItem = document.createElement('div');
-                        weatherItem.className = 'weather-item';
-                        weatherItem.innerHTML = `<strong>${period.name}</strong>
-                                                 <p>${period.temperature}°${period.temperatureUnit}</p>
-                                                 <p>${period.shortForecast}</p>`;
-                        weatherForecast.appendChild(weatherItem);
-                    });
+                    document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].temperature}°${periods[0].temperatureUnit}<br>${periods[0].shortForecast}`;
+                    document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].temperature}°${periods[1].temperatureUnit}<br>${periods[1].shortForecast}`;
+                    document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].temperature}°${periods[2].temperatureUnit}<br>${periods[2].shortForecast}`;
+                    document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].temperature}°${periods[3].temperatureUnit}<br>${periods[3].shortForecast}`;
+                    document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].temperature}°${periods[4].temperatureUnit}<br>${periods[4].shortForecast}`;
                 } catch (error) {
                     logDebugMessage("Error fetching weather data: " + error);
+                    document.getElementById('weather-today').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-tonight').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-next-day').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-next-night').textContent = 'Error fetching weather data';
+                    document.getElementById('weather-day-after-next').textContent = 'Error fetching weather data';
                 }
             }
 
@@ -226,5 +230,6 @@
             fetchWeatherData();
         });
     </script>
+    <script src="scrape.js"></script>
 </body>
 </html>
