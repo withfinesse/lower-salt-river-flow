@@ -85,22 +85,13 @@
             margin-bottom: 20px;
         }
         .weather-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 10px;
             margin-bottom: 10px;
-        }
-        .hidden {
-            display: none;
-        }
-        .show-more {
-            cursor: pointer;
-            color: #4682b4;
-            text-decoration: underline;
-            font-size: 0.9em;
-            text-align: center;
-            display: block;
-            margin-top: 10px;
         }
     </style>
 </head>
@@ -134,12 +125,13 @@
         </div>
         <div class="weather-forecast" id="weather-forecast">
             <h3>Weather Forecast</h3>
-            <div class="weather-item" id="weather-today">Loading...</div>
-            <div class="weather-item" id="weather-tonight">Loading...</div>
-            <div class="weather-item hidden" id="weather-next-day">Loading...</div>
-            <div class="weather-item hidden" id="weather-next-night">Loading...</div>
-            <div class="weather-item hidden" id="weather-day-after-next">Loading...</div>
-            <span class="show-more" id="show-more">More weather...</span>
+            <div class="data-grid">
+                <div class="weather-item" id="weather-today">Loading...</div>
+                <div class="weather-item" id="weather-tonight">Loading...</div>
+                <div class="weather-item" id="weather-next-day">Loading...</div>
+                <div class="weather-item" id="weather-next-night">Loading...</div>
+                <div class="weather-item" id="weather-day-after-next">Loading...</div>
+            </div>
         </div>
         <div class="version">v3.1.0</div>
         <div class="console-toggle" id="toggle-console">View Console</div>
@@ -152,8 +144,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         const debugLog = document.getElementById('debug-log');
         const toggleConsole = document.getElementById('toggle-console');
-        const toggleWeather = document.getElementById('toggle-weather');
-        const weatherNextDays = document.getElementById('weather-next-days');
 
         function logDebugMessage(message) {
             const logEntry = document.createElement('div');
@@ -169,16 +159,6 @@
             } else {
                 debugLog.style.display = 'none';
                 toggleConsole.textContent = 'View Console';
-            }
-        });
-
-        toggleWeather.addEventListener('click', function() {
-            if (weatherNextDays.style.display === 'none') {
-                weatherNextDays.style.display = 'block';
-                toggleWeather.textContent = 'Show Less Weather';
-            } else {
-                weatherNextDays.style.display = 'none';
-                toggleWeather.textContent = 'More Weather...';
             }
         });
 
@@ -238,13 +218,11 @@
                 if (!periods || periods.length === 0) {
                     throw new Error("No weather periods found in the response.");
                 }
-
                 document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].detailedForecast}`;
                 document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].detailedForecast}`;
                 document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].detailedForecast}`;
                 document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].detailedForecast}`;
                 document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].detailedForecast}`;
-                document.getElementById('weather-day-after-next-night').innerHTML = `<strong>${periods[5].name}</strong><br>${periods[5].detailedForecast}`;
             } catch (error) {
                 logDebugMessage("Error fetching weather data: " + error);
                 document.getElementById('weather-today').textContent = 'Error fetching weather data';
@@ -252,7 +230,6 @@
                 document.getElementById('weather-next-day').textContent = 'Error fetching weather data';
                 document.getElementById('weather-next-night').textContent = 'Error fetching weather data';
                 document.getElementById('weather-day-after-next').textContent = 'Error fetching weather data';
-                document.getElementById('weather-day-after-next-night').textContent = 'Error fetching weather data';
             }
         }
 
