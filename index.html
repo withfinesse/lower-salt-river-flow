@@ -103,11 +103,6 @@
                 <strong>Precipitation</strong>
                 <span id="precipitation">Loading...</span>
             </div>
-            <div class="data-item" role="contentinfo">
-                <div class="icon" aria-label="Last Update Icon">🕰️</div>
-                <strong>Last Update</strong>
-                <span id="last-update">Loading...</span>
-            </div>
             <!-- New Data Items -->
             <div class="data-item" role="contentinfo">
                 <div class="icon" aria-label="Temperature Icon">🌡️</div>
@@ -115,14 +110,14 @@
                 <span id="temperature">Loading...</span>
             </div>
             <div class="data-item" role="contentinfo">
-                <div class="icon" aria-label="Wind Direction Icon">🧭</div>
-                <strong>Wind Direction</strong>
-                <span id="wind-direction">Loading...</span>
-            </div>
-            <div class="data-item" role="contentinfo">
                 <div class="icon" aria-label="Wind Speed Icon">💨</div>
                 <strong>Wind Speed</strong>
                 <span id="wind-speed">Loading...</span>
+            </div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon" aria-label="Wind Direction Icon">🧭</div>
+                <strong>Wind Direction</strong>
+                <span id="wind-direction">Loading...</span>
             </div>
             <!-- Existing Weather Data Items -->
             <div class="data-item" role="contentinfo">
@@ -212,24 +207,26 @@
             const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
             const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
             const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
-            const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
 
             logDebugMessage("Discharge: " + discharge);
             logDebugMessage("Gage Height: " + gageHeight);
             logDebugMessage("Precipitation: " + precipitation);
-            logDebugMessage("Last Update Time: " + lastUpdateTime);
 
             document.getElementById('flow-data').textContent = `${discharge} cfs`;
             document.getElementById('gage-height').textContent = `${gageHeight} ft`;
             document.getElementById('precipitation').textContent = `${precipitation} in`;
-            document.getElementById('last-update').textContent = lastUpdateTime.toLocaleString();
         } catch (error) {
             logDebugMessage("Error fetching data: " + error);
             document.getElementById('flow-data').textContent = 'Error fetching data';
             document.getElementById('gage-height').textContent = 'Error fetching data';
             document.getElementById('precipitation').textContent = 'Error fetching data';
-            document.getElementById('last-update').textContent = 'Error fetching data';
         }
+    }
+
+    function degreesToCompass(degrees) {
+        const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        const index = Math.round(degrees / 22.5) % 16;
+        return directions[index];
     }
 
     async function fetchWeatherData() {
@@ -285,7 +282,7 @@
             logDebugMessage("Wind Speed (mph): " + windSpeed);
 
             document.getElementById('temperature').textContent = `${temperatureF.toFixed(2)} °F`;
-            document.getElementById('wind-direction').textContent = `${windDirection}°`;
+            document.getElementById('wind-direction').textContent = degreesToCompass(windDirection);
             document.getElementById('wind-speed').textContent = `${windSpeed.toFixed(2)} mph`;
         } catch (error) {
             logDebugMessage("Error fetching observation data: " + error);
