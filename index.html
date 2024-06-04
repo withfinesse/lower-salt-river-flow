@@ -202,7 +202,7 @@
         async function fetchWeatherData() {
             logDebugMessage("Fetching weather data...");
             try {
-                const response = await fetch('https://api.weather.gov/zones/land/AZZ547/forecast');
+                const response = await fetch('https://api.weather.gov/zones/forecast/AZZ547');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -215,11 +215,11 @@
                     throw new Error("No weather periods found in the response.");
                 }
 
-                document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].temperature}°${periods[0].temperatureUnit}<br>${periods[0].shortForecast}`;
-                document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].temperature}°${periods[1].temperatureUnit}<br>${periods[1].shortForecast}`;
-                document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].temperature}°${periods[2].temperatureUnit}<br>${periods[2].shortForecast}`;
-                document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].temperature}°${periods[3].temperatureUnit}<br>${periods[3].shortForecast}`;
-                document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].temperature}°${periods[4].temperatureUnit}<br>${periods[4].shortForecast}`;
+                document.getElementById('weather-today').innerHTML = `<strong>${periods[0].name}</strong><br>${periods[0].temperature}°${periods[0].temperatureUnit}<br>${periods[0].detailedForecast}`;
+                document.getElementById('weather-tonight').innerHTML = `<strong>${periods[1].name}</strong><br>${periods[1].temperature}°${periods[1].temperatureUnit}<br>${periods[1].detailedForecast}`;
+                document.getElementById('weather-next-day').innerHTML = `<strong>${periods[2].name}</strong><br>${periods[2].temperature}°${periods[2].temperatureUnit}<br>${periods[2].detailedForecast}`;
+                document.getElementById('weather-next-night').innerHTML = `<strong>${periods[3].name}</strong><br>${periods[3].temperature}°${periods[3].temperatureUnit}<br>${periods[3].detailedForecast}`;
+                document.getElementById('weather-day-after-next').innerHTML = `<strong>${periods[4].name}</strong><br>${periods[4].temperature}°${periods[4].temperatureUnit}<br>${periods[4].detailedForecast}`;
             } catch (error) {
                 logDebugMessage("Error fetching weather data: " + error);
                 document.getElementById('weather-today').textContent = 'Error fetching weather data';
@@ -234,5 +234,6 @@
         fetchWeatherData();
     });
 </script>
+
 </body>
 </html>
