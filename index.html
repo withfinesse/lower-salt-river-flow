@@ -76,23 +76,6 @@
             font-size: 0.9em;
             color: #333;
         }
-        .weather-forecast {
-            margin: 20px 0;
-            text-align: left;
-        }
-        .weather-forecast h3 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .weather-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
         .hidden {
             display: none;
         }
@@ -125,40 +108,33 @@
                 <strong>Last Update</strong>
                 <span id="last-update">Loading...</span>
             </div>
-        </div>
-        <div class="weather-forecast" id="weather-forecast">
-            <div class="data-grid">
-                <div class="weather-item" id="weather-today">
-                    <div class="icon">⛅</div>
-                    <strong>Weather Today</strong><br>
-                    <span id="weather-today-text">Loading...</span>
-                </div>
-                <div class="weather-item" id="weather-tonight">
-                    <div class="icon">🌙</div>
-                    <strong>Weather Tonight</strong><br>
-                    <span id="weather-tonight-text">Loading...</span>
-                </div>
-                <div id="additional-weather" class="hidden">
-                    <div class="weather-item" id="weather-next-day">
-                        <div class="icon">⛅</div>
-                        <strong id="weather-next-day-title"></strong><br>
-                        <span id="weather-next-day-text">Loading...</span>
-                    </div>
-                    <div class="weather-item" id="weather-next-night">
-                        <div class="icon">🌙</div>
-                        <strong id="weather-next-night-title"></strong><br>
-                        <span id="weather-next-night-text">Loading...</span>
-                    </div>
-                    <div class="weather-item" id="weather-day-after-next">
-                        <div class="icon">⛅</div>
-                        <strong id="weather-day-after-next-title"></strong><br>
-                        <span id="weather-day-after-next-text">Loading...</span>
-                    </div>
-                </div>
-
+            <div class="data-item" role="contentinfo">
+                <div class="icon">⛅</div>
+                <strong>Weather Today</strong><br>
+                <span id="weather-today-text">Loading...</span>
             </div>
-            <div class="console-toggle" id="toggle-weather">More weather...</div>
+            <div class="data-item" role="contentinfo">
+                <div class="icon">🌙</div>
+                <strong>Weather Tonight</strong><br>
+                <span id="weather-tonight-text">Loading...</span>
+            </div>
+            <div id="weather-next-day" class="data-item hidden">
+                <div class="icon">⛅</div>
+                <strong id="weather-next-day-title"></strong><br>
+                <span id="weather-next-day-text">Loading...</span>
+            </div>
+            <div id="weather-next-night" class="data-item hidden">
+                <div class="icon">🌙</div>
+                <strong id="weather-next-night-title"></strong><br>
+                <span id="weather-next-night-text">Loading...</span>
+            </div>
+            <div id="weather-day-after-next" class="data-item hidden">
+                <div class="icon">⛅</div>
+                <strong id="weather-day-after-next-title"></strong><br>
+                <span id="weather-day-after-next-text">Loading...</span>
+            </div>
         </div>
+        <div class="console-toggle" id="toggle-weather">More weather...</div>
         <div class="version">v4.0.0</div>
     </main>
     <footer class="footer">
@@ -171,107 +147,111 @@
         const debugLog = document.getElementById('debug-log');
         const toggleConsole = document.getElementById('toggle-console');
         const toggleWeather = document.getElementById('toggle-weather');
-        const additionalWeather = document.getElementById('additional-weather');
-    
-        function logDebugMessage(message) {
-            const logEntry = document.createElement('div');
-            logEntry.textContent = message;
-            debugLog.appendChild(logEntry);
-            console.log(message); // Also log to browser console for easier debugging
+
+    function logDebugMessage(message) {
+        const logEntry = document.createElement('div');
+        logEntry.textContent = message;
+        debugLog.appendChild(logEntry);
+        console.log(message); // Also log to browser console for easier debugging
+    }
+
+    toggleConsole.addEventListener('click', function() {
+        if (debugLog.style.display === 'none') {
+            debugLog.style.display = 'block';
+            toggleConsole.textContent = 'Hide Console';
+        } else {
+            debugLog.style.display = 'none';
+            toggleConsole.textContent = 'View Console';
         }
-    
-        toggleConsole.addEventListener('click', function() {
-            if (debugLog.style.display === 'none') {
-                debugLog.style.display = 'block';
-                toggleConsole.textContent = 'Hide Console';
-            } else {
-                debugLog.style.display = 'none';
-                toggleConsole.textContent = 'View Console';
-            }
+    });
+
+    toggleWeather.addEventListener('click', function() {
+        const additionalWeatherItems = ['weather-next-day', 'weather-next-night', 'weather-day-after-next'];
+        additionalWeatherItems.forEach(id => {
+            const element = document.getElementById(id);
+            element.classList.toggle('hidden');
         });
-    
-        toggleWeather.addEventListener('click', function() {
-            additionalWeather.classList.toggle('hidden');
-            toggleWeather.textContent = toggleWeather.textContent === 'More weather...' ? 'Less weather...' : 'More weather...';
-        });
-    
-        async function fetchWaterData() {
-            logDebugMessage("Fetching water data...");
-            try {
-                const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                logDebugMessage("Data fetched: " + JSON.stringify(data));
-    
-                const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
-                const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
-                const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
-    
-                if (!dischargeTimeSeries || !gageHeightTimeSeries || !precipitationTimeSeries) {
-                    throw new Error("One or more required data series are missing in the response.");
-                }
-    
-                const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
-                const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
-                const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
-                const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
-    
-                logDebugMessage("Discharge: " + discharge);
-                logDebugMessage("Gage Height: " + gageHeight);
-                logDebugMessage("Precipitation: " + precipitation);
-                logDebugMessage("Last Update Time: " + lastUpdateTime);
-    
-                document.getElementById('flow-data').textContent = `${discharge} cfs`;
-                document.getElementById('gage-height').textContent = `${gageHeight} ft`;
-                document.getElementById('precipitation').textContent = `${precipitation} in`;
-                document.getElementById('last-update').textContent = lastUpdateTime.toLocaleString();
-            } catch (error) {
-                logDebugMessage("Error fetching data: " + error);
-                document.getElementById('flow-data').textContent = 'Error fetching data';
-                document.getElementById('gage-height').textContent = 'Error fetching data';
-                document.getElementById('precipitation').textContent = 'Error fetching data';
-                document.getElementById('last-update').textContent = 'Error fetching data';
+        toggleWeather.textContent = toggleWeather.textContent === 'More weather...' ? 'Less weather...' : 'More weather...';
+    });
+
+    async function fetchWaterData() {
+        logDebugMessage("Fetching water data...");
+        try {
+            const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        }
-    
-        async function fetchWeatherData() {
-            logDebugMessage("Fetching weather data...");
-            try {
-                const response = await fetch('https://api.weather.gov/zones/forecast/AZZ547/forecast');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const weatherData = await response.json();
-                logDebugMessage("Weather data fetched: " + JSON.stringify(weatherData));
-    
-                const periods = weatherData.properties.periods;
-    
-                if (!periods || periods.length === 0) {
-                    throw new Error("No weather periods found in the response.");
-                }
-                document.getElementById('weather-today-text').innerHTML = `${periods[0].detailedForecast}`;
-                document.getElementById('weather-tonight-text').innerHTML = `${periods[1].detailedForecast}`;
-                document.getElementById('weather-next-day-title').textContent = periods[2].name;
-                document.getElementById('weather-next-day-text').innerHTML = `${periods[2].detailedForecast}`;
-                document.getElementById('weather-next-night-title').textContent = periods[3].name;
-                document.getElementById('weather-next-night-text').innerHTML = `${periods[3].detailedForecast}`;
-                document.getElementById('weather-day-after-next-title').textContent = periods[4].name;
-                document.getElementById('weather-day-after-next-text').innerHTML = `${periods[4].detailedForecast}`;
-            } catch (error) {
-                logDebugMessage("Error fetching weather data: " + error);
-                document.getElementById('weather-today-text').textContent = 'Error fetching weather data';
-                document.getElementById('weather-tonight-text').textContent = 'Error fetching weather data';
-                document.getElementById('weather-next-day-text').textContent = 'Error fetching weather data';
-                document.getElementById('weather-next-night-text').textContent = 'Error fetching weather data';
-                document.getElementById('weather-day-after-next-text').textContent = 'Error fetching weather data';
+            const data = await response.json();
+            logDebugMessage("Data fetched: " + JSON.stringify(data));
+
+            const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
+            const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
+            const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
+
+            if (!dischargeTimeSeries || !gageHeightTimeSeries || !precipitationTimeSeries) {
+                throw new Error("One or more required data series are missing in the response.");
             }
+
+            const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
+            const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
+            const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
+            const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
+
+            logDebugMessage("Discharge: " + discharge);
+            logDebugMessage("Gage Height: " + gageHeight);
+            logDebugMessage("Precipitation: " + precipitation);
+            logDebugMessage("Last Update Time: " + lastUpdateTime);
+
+            document.getElementById('flow-data').textContent = `${discharge} cfs`;
+            document.getElementById('gage-height').textContent = `${gageHeight} ft`;
+            document.getElementById('precipitation').textContent = `${precipitation} in`;
+            document.getElementById('last-update').textContent = lastUpdateTime.toLocaleString();
+        } catch (error) {
+            logDebugMessage("Error fetching data: " + error);
+            document.getElementById('flow-data').textContent = 'Error fetching data';
+            document.getElementById('gage-height').textContent = 'Error fetching data';
+            document.getElementById('precipitation').textContent = 'Error fetching data';
+            document.getElementById('last-update').textContent = 'Error fetching data';
         }
-    
-        fetchWaterData();
-        fetchWeatherData();
+    }
+
+    async function fetchWeatherData() {
+        logDebugMessage("Fetching weather data...");
+        try {
+            const response = await fetch('https://api.weather.gov/zones/forecast/AZZ547/forecast');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const weatherData = await response.json();
+            logDebugMessage("Weather data fetched: " + JSON.stringify(weatherData));
+
+            const periods = weatherData.properties.periods;
+
+            if (!periods || periods.length === 0) {
+                throw new Error("No weather periods found in the response.");
+            }
+            document.getElementById('weather-today-text').innerHTML = `${periods[0].detailedForecast}`;
+            document.getElementById('weather-tonight-text').innerHTML = `${periods[1].detailedForecast}`;
+            document.getElementById('weather-next-day-title').textContent = periods[2].name;
+            document.getElementById('weather-next-day-text').innerHTML = `${periods[2].detailedForecast}`;
+            document.getElementById('weather-next-night-title').textContent = periods[3].name;
+            document.getElementById('weather-next-night-text').innerHTML = `${periods[3].detailedForecast}`;
+            document.getElementById('weather-day-after-next-title').textContent = periods[4].name;
+            document.getElementById('weather-day-after-next-text').innerHTML = `${periods[4].detailedForecast}`;
+        } catch (error) {
+            logDebugMessage("Error fetching weather data: " + error);
+            document.getElementById('weather-today-text').textContent = 'Error fetching weather data';
+            document.getElementById('weather-tonight-text').textContent = 'Error fetching weather data';
+            document.getElementById('weather-next-day-text').textContent = 'Error fetching weather data';
+            document.getElementById('weather-next-night-text').textContent = 'Error fetching weather data';
+            document.getElementById('weather-day-after-next-text').textContent = 'Error fetching weather data';
+        }
+    }
+
+    fetchWaterData();
+    fetchWeatherData();
 });
+
 </script>
 </body>
 </html>
