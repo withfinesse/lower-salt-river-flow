@@ -79,6 +79,16 @@
         .hidden {
             display: none;
         }
+        .update-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin: 20px 0;
+            width: 90%;
+            max-width: 600px;
+        }
     </style>
 </head>
 <body>
@@ -148,6 +158,11 @@
         <div class="console-toggle" id="toggle-weather">More weather...</div>
         <div class="version">v4.0.0</div>
     </main>
+    <section class="update-section">
+        <p>Flow/Gage/Precipitation updated: <span id="usgs-update-time">Loading...</span></p>
+        <p>Temperature/Wind Speed & Direction updated: <span id="observation-update-time">Loading...</span></p>
+        <p>Weather forecasts updated: <span id="weather-update-time">Loading...</span></p>
+    </section>
     <footer class="footer">
         <p>Lower Salt River Conditions</p>
     </footer>
@@ -159,143 +174,153 @@
         const toggleConsole = document.getElementById('toggle-console');
         const toggleWeather = document.getElementById('toggle-weather');
 
-    function logDebugMessage(message) {
-        const logEntry = document.createElement('div');
-        logEntry.textContent = message;
-        debugLog.appendChild(logEntry);
-        console.log(message); // Also log to browser console for easier debugging
-    }
-
-    toggleConsole.addEventListener('click', function() {
-        if (debugLog.style.display === 'none') {
-            debugLog.style.display = 'block';
-            toggleConsole.textContent = 'Hide Console';
-        } else {
-            debugLog.style.display = 'none';
-            toggleConsole.textContent = 'View Console';
+        function logDebugMessage(message) {
+            const logEntry = document.createElement('div');
+            logEntry.textContent = message;
+            debugLog.appendChild(logEntry);
+            console.log(message); // Also log to browser console for easier debugging
         }
-    });
 
-    toggleWeather.addEventListener('click', function() {
-        const additionalWeatherItems = ['weather-next-day', 'weather-next-night', 'weather-day-after-next'];
-        additionalWeatherItems.forEach(id => {
-            const element = document.getElementById(id);
-            element.classList.toggle('hidden');
+        toggleConsole.addEventListener('click', function() {
+            if (debugLog.style.display === 'none') {
+                debugLog.style.display = 'block';
+                toggleConsole.textContent = 'Hide Console';
+            } else {
+                debugLog.style.display = 'none';
+                toggleConsole.textContent = 'View Console';
+            }
         });
-        toggleWeather.textContent = toggleWeather.textContent === 'More weather...' ? 'Less weather...' : 'More weather...';
+
+        toggleWeather.addEventListener('click', function() {
+            const additionalWeatherItems = ['weather-next-day', 'weather-next-night', 'weather-day-after-next'];
+            additionalWeatherItems.forEach(id => {
+                const element = document.getElementById(id);
+                element.classList.toggle('hidden');
+            });
+            toggleWeather.textContent = toggleWeather.textContent === 'More weather...' ? 'Less weather...' : 'More weather...';
+        });
+
+        async function fetchWaterData() {
+            logDebugMessage("Fetching water data...");
+            try {
+                const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                logDebugMessage("Data fetched: " + JSON.stringify(data));
+
+                const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
+                const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
+                const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
+
+                if (!dischargeTimeSeries || !gageHeightTimeSeries || !precipitationTimeSeries) {
+                    throw new Error("One or more required data series are missing in the response.");
+                }
+
+                const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
+                const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
+                const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
+                const lastUpdateTime = new Date(dischargeTimeSeries.values[0].value[0].dateTime);
+
+                logDebugMessage("Discharge: " + discharge);
+                logDebugMessage("Gage Height: " + gageHeight);
+                logDebugMessage("Precipitation: " + precipitation);
+                logDebugMessage("Last Update Time: " + lastUpdateTime);
+
+                document.getElementById('flow-data').textContent = `${discharge} cfs`;
+                document.getElementById('gage-height').textContent = `${gageHeight} ft`;
+                document.getElementById('precipitation').textContent = `${precipitation} in`;
+                document.getElementById('usgs-update-time').textContent = lastUpdateTime.toLocaleString();
+            } catch (error) {
+                logDebugMessage("Error fetching data: " + error);
+                document.getElementById('flow-data').textContent = 'Error fetching data';
+                document.getElementById('gage-height').textContent = 'Error fetching data';
+                document.getElementById('precipitation').textContent = 'Error fetching data';
+                document.getElementById('usgs-update-time').textContent = 'Error fetching data';
+            }
+        }
+
+        function degreesToCompass(degrees) {
+            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+            const index = Math.round(degrees / 22.5) % 16;
+            return directions[index];
+        }
+
+        async function fetchWeatherData() {
+            logDebugMessage("Fetching weather data...");
+            try {
+                const response = await fetch('https://api.weather.gov/zones/forecast/AZZ547/forecast');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const weatherData = await response.json();
+                logDebugMessage("Weather data fetched: " + JSON.stringify(weatherData));
+
+                const periods = weatherData.properties.periods;
+                const updateTime = new Date(weatherData.properties.updated);
+
+                if (!periods || periods.length === 0) {
+                    throw new Error("No weather periods found in the response.");
+                }
+                document.getElementById('weather-today-text').innerHTML = `${periods[0].detailedForecast}`;
+                document.getElementById('weather-tonight-text').innerHTML = `${periods[1].detailedForecast}`;
+                document.getElementById('weather-next-day-title').textContent = periods[2].name;
+                document.getElementById('weather-next-day-text').innerHTML = `${periods[2].detailedForecast}`;
+                document.getElementById('weather-next-night-title').textContent = periods[3].name;
+                document.getElementById('weather-next-night-text').innerHTML = `${periods[3].detailedForecast}`;
+                document.getElementById('weather-day-after-next-title').textContent = periods[4].name;
+                document.getElementById('weather-day-after-next-text').innerHTML = `${periods[4].detailedForecast}`;
+                document.getElementById('weather-update-time').textContent = updateTime.toLocaleString();
+            } catch (error) {
+                logDebugMessage("Error fetching weather data: " + error);
+                document.getElementById('weather-today-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-tonight-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-next-day-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-next-night-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-day-after-next-text').textContent = 'Error fetching weather data';
+                document.getElementById('weather-update-time').textContent = 'Error fetching data';
+            }
+        }
+
+        async function fetchObservationData() {
+            logDebugMessage("Fetching observation data...");
+            try {
+                const response = await fetch('https://api.weather.gov/stations/TTBA3/observations/latest');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                logDebugMessage("Observation data fetched: " + JSON.stringify(data));
+
+                const temperatureC = data.properties.temperature.value;
+                const temperatureF = (temperatureC * 9/5) + 32;
+                const windDirection = data.properties.windDirection.value;
+                const windSpeed = data.properties.windSpeed.value * 0.621371; // convert km/h to mph
+                const observationTime = new Date(data.properties.timestamp);
+
+                logDebugMessage("Temperature (F): " + temperatureF);
+                logDebugMessage("Wind Direction: " + windDirection);
+                logDebugMessage("Wind Speed (mph): " + windSpeed);
+                logDebugMessage("Observation Time: " + observationTime);
+
+                document.getElementById('temperature').textContent = `${temperatureF.toFixed(2)} °F`;
+                document.getElementById('wind-direction').textContent = degreesToCompass(windDirection);
+                document.getElementById('wind-speed').textContent = `${windSpeed.toFixed(2)} mph`;
+                document.getElementById('observation-update-time').textContent = observationTime.toLocaleString();
+            } catch (error) {
+                logDebugMessage("Error fetching observation data: " + error);
+                document.getElementById('temperature').textContent = 'Error fetching data';
+                document.getElementById('wind-direction').textContent = 'Error fetching data';
+                document.getElementById('wind-speed').textContent = 'Error fetching data';
+                document.getElementById('observation-update-time').textContent = 'Error fetching data';
+            }
+        }
+
+        fetchWaterData();
+        fetchWeatherData();
+        fetchObservationData();
     });
-
-    async function fetchWaterData() {
-        logDebugMessage("Fetching water data...");
-        try {
-            const response = await fetch('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09502000');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            logDebugMessage("Data fetched: " + JSON.stringify(data));
-
-            const dischargeTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00060');
-            const gageHeightTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00065');
-            const precipitationTimeSeries = data.value.timeSeries.find(ts => ts.variable.variableCode[0].value === '00045');
-
-            if (!dischargeTimeSeries || !gageHeightTimeSeries || !precipitationTimeSeries) {
-                throw new Error("One or more required data series are missing in the response.");
-            }
-
-            const discharge = parseFloat(dischargeTimeSeries.values[0].value[0].value);
-            const gageHeight = parseFloat(gageHeightTimeSeries.values[0].value[0].value);
-            const precipitation = parseFloat(precipitationTimeSeries.values[0].value[0].value);
-
-            logDebugMessage("Discharge: " + discharge);
-            logDebugMessage("Gage Height: " + gageHeight);
-            logDebugMessage("Precipitation: " + precipitation);
-
-            document.getElementById('flow-data').textContent = `${discharge} cfs`;
-            document.getElementById('gage-height').textContent = `${gageHeight} ft`;
-            document.getElementById('precipitation').textContent = `${precipitation} in`;
-        } catch (error) {
-            logDebugMessage("Error fetching data: " + error);
-            document.getElementById('flow-data').textContent = 'Error fetching data';
-            document.getElementById('gage-height').textContent = 'Error fetching data';
-            document.getElementById('precipitation').textContent = 'Error fetching data';
-        }
-    }
-
-    function degreesToCompass(degrees) {
-        const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-        const index = Math.round(degrees / 22.5) % 16;
-        return directions[index];
-    }
-
-    async function fetchWeatherData() {
-        logDebugMessage("Fetching weather data...");
-        try {
-            const response = await fetch('https://api.weather.gov/zones/forecast/AZZ547/forecast');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const weatherData = await response.json();
-            logDebugMessage("Weather data fetched: " + JSON.stringify(weatherData));
-
-            const periods = weatherData.properties.periods;
-
-            if (!periods || periods.length === 0) {
-                throw new Error("No weather periods found in the response.");
-            }
-            document.getElementById('weather-today-text').innerHTML = `${periods[0].detailedForecast}`;
-            document.getElementById('weather-tonight-text').innerHTML = `${periods[1].detailedForecast}`;
-            document.getElementById('weather-next-day-title').textContent = periods[2].name;
-            document.getElementById('weather-next-day-text').innerHTML = `${periods[2].detailedForecast}`;
-            document.getElementById('weather-next-night-title').textContent = periods[3].name;
-            document.getElementById('weather-next-night-text').innerHTML = `${periods[3].detailedForecast}`;
-            document.getElementById('weather-day-after-next-title').textContent = periods[4].name;
-            document.getElementById('weather-day-after-next-text').innerHTML = `${periods[4].detailedForecast}`;
-        } catch (error) {
-            logDebugMessage("Error fetching weather data: " + error);
-            document.getElementById('weather-today-text').textContent = 'Error fetching weather data';
-            document.getElementById('weather-tonight-text').textContent = 'Error fetching weather data';
-            document.getElementById('weather-next-day-text').textContent = 'Error fetching weather data';
-            document.getElementById('weather-next-night-text').textContent = 'Error fetching weather data';
-            document.getElementById('weather-day-after-next-text').textContent = 'Error fetching weather data';
-        }
-    }
-
-    async function fetchObservationData() {
-        logDebugMessage("Fetching observation data...");
-        try {
-            const response = await fetch('https://api.weather.gov/stations/TTBA3/observations/latest');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            logDebugMessage("Observation data fetched: " + JSON.stringify(data));
-
-            const temperatureC = data.properties.temperature.value;
-            const temperatureF = (temperatureC * 9/5) + 32;
-            const windDirection = data.properties.windDirection.value;
-            const windSpeed = data.properties.windSpeed.value * 0.621371; // convert km/h to mph
-
-            logDebugMessage("Temperature (F): " + temperatureF);
-            logDebugMessage("Wind Direction: " + windDirection);
-            logDebugMessage("Wind Speed (mph): " + windSpeed);
-
-            document.getElementById('temperature').textContent = `${temperatureF.toFixed(2)} °F`;
-            document.getElementById('wind-direction').textContent = degreesToCompass(windDirection);
-            document.getElementById('wind-speed').textContent = `${windSpeed.toFixed(2)} mph`;
-        } catch (error) {
-            logDebugMessage("Error fetching observation data: " + error);
-            document.getElementById('temperature').textContent = 'Error fetching data';
-            document.getElementById('wind-direction').textContent = 'Error fetching data';
-            document.getElementById('wind-speed').textContent = 'Error fetching data';
-        }
-    }
-
-    fetchWaterData();
-    fetchWeatherData();
-    fetchObservationData();
-});
-
 </script>
 </body>
 </html>
