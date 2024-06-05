@@ -131,12 +131,12 @@
             <!-- Existing Weather Data Items -->
             <div class="data-item" role="contentinfo">
                 <div class="icon">⛅</div>
-                <strong>Weather Today</strong><br>
+                <strong id="weather-today-title"></strong><br>
                 <span id="weather-today-text">Loading...</span>
             </div>
             <div class="data-item" role="contentinfo">
                 <div class="icon">🌙</div>
-                <strong>Weather Tonight</strong><br>
+                <strong id="weather-tonight-title"></strong><br>
                 <span id="weather-tonight-text">Loading...</span>
             </div>
             <div id="weather-next-day" class="data-item hidden">
@@ -274,7 +274,9 @@
                 if (!periods || periods.length === 0) {
                     throw new Error("No weather periods found in the response.");
                 }
+                document.getElementById('weather-today-title').textContent = periods[0].name;
                 document.getElementById('weather-today-text').innerHTML = `${periods[0].detailedForecast}`;
+                document.getElementById('weather-tonight-title').textContent = periods[1].name;
                 document.getElementById('weather-tonight-text').innerHTML = `${periods[1].detailedForecast}`;
                 document.getElementById('weather-next-day-title').textContent = periods[2].name;
                 document.getElementById('weather-next-day-text').innerHTML = `${periods[2].detailedForecast}`;
